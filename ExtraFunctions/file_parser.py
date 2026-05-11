@@ -29,3 +29,19 @@ def clean_notifications_data(dataframe):
     dataframe["Tipo infraccion"] = dataframe["acta"].map(lambda x: x.split("-")[0]).map(get_tipos_notificaciones())
     dataframe["localidad"] = dataframe["localidad"].apply(normalizar_localidad)
     return dataframe
+
+
+def clean_medios_de_pago(dataframe):
+    dataframe["total"] = (
+        dataframe["total"]
+        .str.replace(".", "", regex=False)
+        .str.replace(",", ".", regex=False)
+        .astype(float)
+        .astype(int)
+    )
+
+    dataframe["Monto ingresado"] = "$ " + dataframe["total"].map("{:,.0f}".format)
+
+    dataframe["Monto ingresado"] = dataframe["Monto ingresado"].str.replace(",", ".")
+    dataframe = dataframe.rename(columns={"cantidad":"Actas Pagadas"})
+    return dataframe.sort_values(by = "total", ascending=False).reset_index(drop=True)
