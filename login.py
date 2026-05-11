@@ -20,7 +20,7 @@ cola, colb, colc, cold, cole = st.columns([1, 1, 1, 5, 1])
 cole.success("**:material/person: Usuario:** Usuario")
 fecha_seleccionada_desde = cola.date_input(
     ":material/calendar_month: Desde",
-    value=payments_data["fecha_acreditacion"].max().date(),
+    value=payments_data["fecha_acreditacion"].min().date(),
     format="DD/MM/YYYY"
 )
 

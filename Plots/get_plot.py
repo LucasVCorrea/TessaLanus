@@ -1,5 +1,5 @@
-import plotly.express as px
 import numpy as np
+import plotly.express as px
 import plotly.graph_objects as go
 
 from FileGetters.file_getter import get_ranking_medios_de_pago
@@ -166,12 +166,12 @@ def tablero_heatmap(dataframe):
     return fig
 
 
-def show_ranking_medios_de_pago(dataframe = get_ranking_medios_de_pago()):
+def show_ranking_medios_de_pago(dataframe=get_ranking_medios_de_pago()):
     ranking = dataframe.groupby("Medio Pago").agg({"total": ["sum"]}).reset_index()
 
     ranking.columns = ["Medio pago", "total"]
     fig = px.pie(ranking.sort_values(by="total", ascending=False), values="total", names="Medio pago",
-                 color="Medio pago", color_discrete_sequence=px.colors.qualitative.Set2, hole = .5)
+                 color="Medio pago", color_discrete_sequence=px.colors.qualitative.Set2, hole=.5)
     fig.update_layout(
         font=dict(color='black'),
         xaxis=dict(
@@ -186,4 +186,48 @@ def show_ranking_medios_de_pago(dataframe = get_ranking_medios_de_pago()):
         height=350,
     )
     fig.update_traces(textposition='inside', textfont_size=14)
+    return fig
+
+
+def show_camera_map(df):
+    df_mapa = df.copy()
+
+    df_mapa = df_mapa.dropna(subset=["latitud", "longitud"])
+
+    fig = px.scatter_mapbox(
+        df_mapa,
+        lat="latitud",
+        lon="longitud",
+        size="cant",
+        color="cant",
+        hover_name="instalacion",
+        hover_data={
+            "cant": True,
+            "importe_final": True,
+            "latitud": False,
+            "longitud": False,
+        },
+        zoom=12,
+        height=750,
+        size_max=90,
+        color_continuous_scale="Solar"
+    )
+
+    fig.update_layout(
+        mapbox_style="open-street-map",
+        margin={"r": 0, "t": 0, "l": 0, "b": 0},
+
+        mapbox=dict(
+            center=dict(
+                lat=-34.70,
+                lon=-58.40
+            ),
+            zoom=12,
+        )
+    )
+
+    fig.update_traces(
+        marker=dict(opacity=0.85)
+    )
+
     return fig
