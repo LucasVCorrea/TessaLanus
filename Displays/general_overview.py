@@ -37,7 +37,7 @@ def show_general_overview(payments_filtered, notification_filtered):
     )
     col5.metric("Tasa adminstrativa",
                 f"{payments_filtered["total"].astype(int).sum() - payments_filtered["total"].astype(int).sum() * 0.93:,.0f}".replace(",", "."))
-    col6.metric("Valor UF", 0)
+    col6.metric("Valor UF", 2215)
 
     columna_izquierda, columna_central, columna_derecha = st.columns([2, 2, 4])
     with columna_izquierda:
