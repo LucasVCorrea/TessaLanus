@@ -1,3 +1,5 @@
+import io
+
 import pandas as pd
 import re
 import unicodedata
@@ -160,3 +162,10 @@ def normalizar_localidad(valor):
         return None
 
     return equivalencias.get(valor, valor)
+
+def to_excel_reporte(df):
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Reporte de cámaras')
+    processed_data = output.getvalue()
+    return processed_data

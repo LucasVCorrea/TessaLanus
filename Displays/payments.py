@@ -1,5 +1,6 @@
 import streamlit as st
 
+from ExtraFunctions.extras import to_excel_reporte
 from FileGetters.file_getter import get_ranking_medios_de_pago
 from Plots.get_plot import raised_by_type, daily_payments_by_type, tablero_heatmap, show_ranking_medios_de_pago, \
     barplot_by_type, ranking_pagos_plot
@@ -20,7 +21,7 @@ def color_tipo_infraccion(val):
 def show_payments(payments_data):
     payments_data_filtered = payments_data.fillna("Otros")
     columna_izquierda, columna_central, columna_derecha = st.columns([1, 3, 1])
-    columna_derecha.selectbox("**Vista Elegida**:", ["Gráficos", "Vista_2", "Vista_3"])
+    opcion_de_vista = columna_derecha.selectbox("**Vista Elegida**:", ["Gráficos", "Tablas"])
     tipo_infracciones_elegido = columna_central.multiselect(
         "**Seleccionar tipo de infracción**",
         options=payments_data_filtered["Tipo infraccion"].unique(),
@@ -41,18 +42,50 @@ def show_payments(payments_data):
         f"**Actas Pagadas** _({tipos_label if len(tipo_infracciones_elegido) != payments_data_filtered["Tipo infraccion"].nunique() else "Todas las infracciones"}_)",
         f"{len(payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)])} Actas".replace(
             ",", "."), delta=f"tocheck: {0}", help="Help")
-    columna_graficos.plotly_chart(barplot_by_type(
-        payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)]))
-
-    with columna_graficos:
-        columna_izquierda, columna_derecha = st.columns(2)
-        columna_izquierda.caption("**Recaudado por Tipo de Infracción**")
-        columna_izquierda.plotly_chart(raised_by_type(payments_data_filtered), key="adas")
-        columna_derecha.caption(f"**Ranking de Medios de Pago** _({tipos_label if len(tipo_infracciones_elegido) != payments_data_filtered["Tipo infraccion"].nunique() else "Todas las infracciones"}_)")
-        columna_derecha.plotly_chart(ranking_pagos_plot(get_ranking_medios_de_pago(payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)])),
-                                     key="aadas")
-        # columna_derecha.dataframe(get_ranking_medios_de_pago())
-
+    if opcion_de_vista == "Gráficos":
+        columna_graficos.plotly_chart(barplot_by_type(
+            payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)]))
+        with columna_graficos:
+            columna_izquierda, columna_derecha = st.columns(2)
+            columna_izquierda.caption("**Recaudado por Tipo de Infracción**")
+            columna_izquierda.plotly_chart(raised_by_type(payments_data_filtered), key="adas")
+            columna_derecha.caption(
+                f"**Ranking de Medios de Pago** _({tipos_label if len(tipo_infracciones_elegido) != payments_data_filtered["Tipo infraccion"].nunique() else "Todas las infracciones"}_)")
+            columna_derecha.plotly_chart(ranking_pagos_plot(get_ranking_medios_de_pago(
+                payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)])),
+                key="aadas")
+    else:
+        with columna_graficos:
+            columna_izquierda, columna_derecha = st.columns(2)
+            columna_izquierda.write("**Actas Pagadas**")
+            columna_izquierda.dataframe(
+                payments_data_filtered.loc[
+                    payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)].drop(
+                    columns=["numero_cuenta", "comprobante_nro", "total", "juzgado", "created_at", "fecha_pago",
+                             "estado"]),
+                hide_index=True)
+            actas_pagas_table_excel = to_excel_reporte(
+                payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)])
+            columna_izquierda.download_button(
+                label=":green-badge[:material/table: **Descargar Actas pagadas en Excel**]",
+                data=actas_pagas_table_excel,
+                file_name="actas_pagas.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+            columna_derecha.write("**Ranking de Medios de Pago**")
+            columna_derecha.dataframe(get_ranking_medios_de_pago(
+                payments_data_filtered.loc[
+                    payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)]).sort_values(by="total",
+                                                                                                            ascending=False),
+                                      hide_index=True)
+            ranking_pagos_table_excel = to_excel_reporte(get_ranking_medios_de_pago(
+                payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)]))
+            columna_derecha.download_button(
+                label=":green-badge[:material/table: **Descargar Ranking en Excel**]",
+                data=ranking_pagos_table_excel,
+                file_name="ranking_pagos_lanus.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
     #
     # columna_izquierda, columna_derecha = st.columns([2, 3])
     #
