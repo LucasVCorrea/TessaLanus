@@ -33,11 +33,12 @@ def get_valor_uf_dataframe(csv_path="Files/Valor historico UF.csv"):
         return pd.DataFrame()
 
 
-def get_ranking_medios_de_pago(csv_path="Files/Ranking Medios de Pagos-Lanus.csv"):
+def get_ranking_medios_de_pago(df):
     try:
-        df = pd.read_csv(csv_path, dtype=str)
         df = df.fillna("")
         df = clean_medios_de_pago(df)
+        df = df.groupby("medio_pago").agg({"total":["sum"]}).reset_index()
+        df.columns = ["Medio Pago", "total"]
         return df
     except FileNotFoundError:
         return pd.DataFrame()

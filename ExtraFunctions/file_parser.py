@@ -18,7 +18,15 @@ def clean_payments_data(dataframe):
         dataframe["fecha_acreditacion"],
     )
     dataframe["Tipo infraccion"] = dataframe["numero"].map(lambda x: x.split("-")[0]).map(get_tipos_notificaciones())
-    dataframe["total"] = dataframe["total"].astype(int)
+    dataframe = dataframe.rename(columns={"Monto Total": "total"})
+    dataframe["total"] = dataframe["total"].map(lambda x: x.replace(".", "")).map(lambda x: x.replace(",", ".")).astype(
+        float)
+    dataframe["Tasa administrativa"] = dataframe["Tasa administrativa"].map(lambda x: x.replace(".", "")).map(
+        lambda x: x.replace(",", ".")).astype(
+        float)
+    dataframe["Tasa infraccion"] = dataframe["Tasa infraccion"].map(lambda x: x.replace(".", "")).map(
+        lambda x: x.replace(",", ".")).astype(
+        float)
     return dataframe
 
 
@@ -32,6 +40,8 @@ def clean_notifications_data(dataframe):
 
 
 def clean_medios_de_pago(dataframe):
+    dataframe = dataframe.rename(columns={"Monto Total": "total"})
+    dataframe["total"] = dataframe["total"].astype(str)
     dataframe["total"] = (
         dataframe["total"]
         .str.replace(".", "", regex=False)

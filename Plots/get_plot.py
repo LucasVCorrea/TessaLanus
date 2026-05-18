@@ -166,7 +166,7 @@ def tablero_heatmap(dataframe):
     return fig
 
 
-def show_ranking_medios_de_pago(dataframe=get_ranking_medios_de_pago()):
+def show_ranking_medios_de_pago(dataframe):
     ranking = dataframe.groupby("Medio Pago").agg({"total": ["sum"]}).reset_index()
 
     ranking.columns = ["Medio pago", "total"]
@@ -230,4 +230,59 @@ def show_camera_map(df):
         marker=dict(opacity=0.85)
     )
 
+    return fig
+
+
+def barplot_by_type(df):
+    agrupado = df.groupby(["fecha_acreditacion", "Tipo infraccion"]).agg({"numero": ["count"]}).reset_index()
+    agrupado.columns = ["fecha", "tipo", "acta"]
+    fig = px.bar(agrupado, color="tipo", x="fecha", y="acta",
+                 color_discrete_sequence=["#e6e6ff", "BlueViolet", "MidnightBlue", "Red"]
+                 , category_orders={"tipo": ["Fotomulta",
+                                             "Velocidad",
+                                             "PDA",
+                                             "Camara movil"]},
+                 text_auto=True)
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color='black'),
+        xaxis=dict(
+            title=dict(font=dict(color='black')),
+            tickfont=dict(color='black'),
+        ),
+        yaxis=dict(
+            title=dict(font=dict(color='black'), ),
+            tickfont=dict(color='black'),
+        ),
+        height=320)
+    return fig
+
+
+def ranking_pagos_plot(df):
+    fig = px.pie(df, names="Medio Pago", values="total", color="Medio Pago",
+                 color_discrete_sequence=px.colors.qualitative.Set2, hole=.5)
+    fig.update_layout(
+        font=dict(color='black'),
+        xaxis=dict(
+            title=dict(font=dict(color='black')),
+            tickfont=dict(color='black'),
+        ),
+        yaxis=dict(
+            title=dict(font=dict(color='black'), ),
+            tickfont=dict(color='black'),
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.3,
+            xanchor="center",
+            x=0.5
+        ),
+        height=400,
+    )
+    fig.update_traces(
+        textfont_size=16,
+
+    )
     return fig
