@@ -1,6 +1,7 @@
 import pandas as pd
 
 from ExtraFunctions.extras import normalizar_localidad
+from format import traducir_mes
 
 
 def get_tipos_notificaciones():
@@ -17,6 +18,9 @@ def clean_payments_data(dataframe):
     dataframe["fecha_acreditacion"] = pd.to_datetime(
         dataframe["fecha_acreditacion"],
     )
+    dataframe["Año"] = dataframe["fecha_acreditacion"].dt.year
+    dataframe["Mes"] = pd.to_datetime(dataframe["fecha_acreditacion"]).dt.month_name().str.capitalize()
+    dataframe["Mes"] = dataframe["Mes"].map(traducir_mes)
     dataframe["Tipo infraccion"] = dataframe["numero"].map(lambda x: x.split("-")[0]).map(get_tipos_notificaciones())
     dataframe = dataframe.rename(columns={"Monto Total": "total"})
     dataframe["total"] = dataframe["total"].map(lambda x: x.replace(".", "")).map(lambda x: x.replace(",", ".")).astype(
@@ -34,6 +38,9 @@ def clean_notifications_data(dataframe):
     dataframe["Fecha Lote"] = pd.to_datetime(
         dataframe["Fecha Lote"],
     )
+    dataframe["Año"] = dataframe["Fecha Lote"].dt.year
+    dataframe["Mes"] = pd.to_datetime(dataframe["Fecha Lote"]).dt.month_name().str.capitalize()
+    dataframe["Mes"] = dataframe["Mes"].map(traducir_mes)
     dataframe["Tipo infraccion"] = dataframe["acta"].map(lambda x: x.split("-")[0]).map(get_tipos_notificaciones())
     dataframe["localidad"] = dataframe["localidad"].apply(normalizar_localidad)
     return dataframe

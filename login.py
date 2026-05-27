@@ -1,57 +1,71 @@
 import streamlit as st
-from streamlit_extras.metric_cards import style_metric_cards
+import streamlit_authenticator as stauth
+import yaml
+from yaml.loader import SafeLoader
 
-from Displays.camera_activity import show_camera_activity
-from Displays.general_overview import show_general_overview
-from Displays.payments import show_payments
-from FileGetters.file_getter import *
+import format
+import interaction
+from Styles.estilos import aplicar_estilo_login
 
-st.set_page_config(
-    layout="wide",
-    page_title="Actividad Fotomultas Lanus",
-    page_icon=":material/check:"
+st.set_page_config(page_title="BerissoUNLaM", layout="wide")
+
+def mostrar_vista_admin(rol):
+    interaction.interaction(rol)
+
+with open('logs/config.yaml', 'r') as file:
+    config = yaml.load(file, Loader=SafeLoader)
+
+authenticator = stauth.Authenticate(
+    config['credentials'],
+    config['cookie']['name'],
+    config['cookie']['key'],
+    config['cookie']['expiry_days']
 )
 
-payments_data = get_actas_pagadas_dataframe()
-notifications_data = get_notificaciones_dataframe()
-uf_data = get_valor_uf_dataframe()
+if 'authentication_status' not in st.session_state:
+    st.session_state['authentication_status'] = None
 
-cola, colb, colc, cold, cole = st.columns([1, 1, 1, 5, 1])
-cole.success("**:material/person: Usuario:** Usuario")
-fecha_seleccionada_desde = cola.date_input(
-    ":material/calendar_month: Desde",
-    value=payments_data["fecha_acreditacion"].min().date(),
-    format="DD/MM/YYYY"
-)
+if 'pagina' not in st.session_state:
+    st.session_state['pagina'] = 'dashboard'  # Default al ingresar
+if st.session_state['authentication_status'] is None:
+    aplicar_estilo_login()
+    col1, col2, col3 = st.columns([2, 1, 2])
+    with col2:
+        # col1m2.image('Icons/letter-b (1).png', width=100)
+        login_result = authenticator.login(location='sidebar', key='Inicie sesión',
+                                           fields={'Form name': ' ',
+                                                   'Username': ':material/contacts_product: **Usuario**',
+                                                   'Password': '**:material/key_vertical: Contraseña**',
+                                                   'Login': ':material/login: :red[**Ingresar al Panel**]'})
+    # st.sidebar.image("Icons/Algo Algo Algo (2).png", width=300)
 
-fecha_seleccionada_hasta = colb.date_input(
-    ":material/calendar_month: Hasta",
-    value=payments_data["fecha_acreditacion"].max().date(),
-    min_value=fecha_seleccionada_desde,
-    max_value=payments_data["fecha_acreditacion"].max().date(),
-    format="DD/MM/YYYY"
-)
-tab_general, tab_pagos, tab_camaras = st.tabs(
-    [":material/apps: :blue-badge[**General**]", ":material/account_balance: :blue-badge[**Pagos**]",
-     ":material/speed_camera: :blue-badge[**Actividad de Cámaras**]"])
+    if login_result:
+        name, authentication_status, username = login_result
+        st.session_state['authentication_status'] = authentication_status
+        st.session_state['username'] = username
+        st.session_state['name'] = name
+        st.rerun()
+    if st.session_state['name'] != None:
+        current_user = config['credentials']['usernames'][st.session_state['username']]
+        role = current_user.get('role', '')
+        format.registrar_historial_acceso(st.session_state['name'], st.session_state['username'], role)
+if st.session_state['authentication_status']:
+    # authenticator.logout(':blue[Cerrar sesión]', location='sidebar')
+    current_user = config['credentials']['usernames'][st.session_state['username']]
+    role = current_user.get('role', '')
+    st.sidebar.success(f"Usuario: **{st.session_state['name']}**", icon=":material/person:")
 
-fecha_desde = pd.to_datetime(fecha_seleccionada_desde)
-fecha_hasta = pd.to_datetime(fecha_seleccionada_hasta)
+    if st.sidebar.button('Ir al Panel', icon=":material/bar_chart_4_bars:", type="primary"):
+        st.session_state['pagina'] = 'dashboard'
+    if st.sidebar.button('Cambiar contraseña', icon=":material/key_vertical:", type="primary"):
+        st.session_state['pagina'] = 'cambiar_contrasena'
 
-payments_filtered = payments_data.loc[
-    payments_data["fecha_acreditacion"].between(fecha_desde, fecha_hasta)
-]
+    nombre_usuario = current_user.get('name', '')
+    if st.session_state['pagina'] == 'dashboard':
+        mostrar_vista_admin(role)
 
-notification_filtered = notifications_data.loc[
-    notifications_data["Fecha Lote"].between(fecha_desde, fecha_hasta)
-]
-
-with tab_general:
-    show_general_overview(payments_filtered, notification_filtered)
-with tab_pagos:
-    show_payments(payments_filtered)
-with tab_camaras:
-    show_camera_activity()
-style_metric_cards(background_color="white", border_left_color="#b30000", box_shadow=False,
-                   border_color="azure",
-                   border_radius_px=30)
+    # st.sidebar.image("Icons/Algo Algo Algo (2).png", width=300)
+if st.session_state['authentication_status'] is False:
+    col1, col2, col3 = st.columns([2, 1, 2])
+    with col2:
+        st.error('Usuario o contraseña incorrectos.', icon=":material/warning:")

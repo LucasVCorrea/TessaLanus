@@ -1,6 +1,6 @@
 [theme]
 base = "light"
-primaryColor = "#990033"
+primaryColor = "#993333"
 borderColor = "brown"
 secondaryBackgroundColor = "#f2d9d9"
 backgroundColor = "Snow"
@@ -10,7 +10,8 @@ showErrorDetails = "none"
 toolbarMode = "minimal"
 showSidebarNavigation = false
 
-#[theme.sidebar]
-#secondaryBackgroundColor = "#99d6ff"
-#primaryColor = "blue"
-#textColor = "black"
+[theme.sidebar]
+textColor = "black"
+primaryColor = "#990033"
+backgroundColor = "WhiteSmoke"
+secondaryBackgroundColor = "white"

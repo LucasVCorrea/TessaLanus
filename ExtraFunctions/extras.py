@@ -169,3 +169,13 @@ def to_excel_reporte(df):
         df.to_excel(writer, index=False, sheet_name='Reporte de cámaras')
     processed_data = output.getvalue()
     return processed_data
+
+# def show_user_and_logout():
+#
+#     user = st.session_state.get("user", None)
+#
+#     if user is not None:
+#         st.sidebar.write(f"**Usuario:** {user}")
+#         if st.sidebar.button("Cerrar sesión"):
+#             st.session_state["user"] = None
+#             st.experimental_rerun()

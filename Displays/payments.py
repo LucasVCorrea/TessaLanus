@@ -1,9 +1,12 @@
+import pandas as pd
 import streamlit as st
+from streamlit_extras.metric_cards import style_metric_cards
 
 from ExtraFunctions.extras import to_excel_reporte
 from FileGetters.file_getter import get_ranking_medios_de_pago
 from Plots.get_plot import raised_by_type, daily_payments_by_type, tablero_heatmap, show_ranking_medios_de_pago, \
     barplot_by_type, ranking_pagos_plot
+from Styles.estilos import aplicar_estilo_dashboard
 
 
 def color_tipo_infraccion(val):
@@ -19,8 +22,22 @@ def color_tipo_infraccion(val):
 
 
 def show_payments(payments_data):
+    aplicar_estilo_dashboard()
+
     payments_data_filtered = payments_data.fillna("Otros")
-    columna_izquierda, columna_central, columna_derecha = st.columns([1, 3, 1])
+    fecha_minima = payments_data.fecha_acreditacion.min()
+    fecha_maxima = payments_data.fecha_acreditacion.max()
+    columna_izquierda, columna_central, columna_derecha = st.columns([1, 2, 1])
+    with columna_izquierda:
+        columna_desde, columna_hasta = st.columns(2)
+        fecha_desde = columna_desde.date_input(":material/calendar_month: **Desde**", format="DD/MM/YYYY",
+                                               help=f"- Los Datos están disponibles desde **{fecha_minima.strftime('%d/%m/%Y')}** Al **{fecha_maxima.strftime('%d/%m/%Y')}**",
+                                               value=fecha_maxima - pd.Timedelta(days=4))
+        fecha_hasta = columna_hasta.date_input(":material/calendar_month: **Hasta**", format="DD/MM/YYYY",
+                                               min_value=fecha_desde)
+        payments_data_filtered = payments_data_filtered.loc[
+            (payments_data_filtered["fecha_acreditacion"].dt.date >= fecha_desde) & (
+                        payments_data_filtered["fecha_acreditacion"].dt.date <= fecha_hasta)]
     opcion_de_vista = columna_derecha.selectbox("**Vista Elegida**:", ["Gráficos", "Tablas"])
     tipo_infracciones_elegido = columna_central.multiselect(
         "**Seleccionar tipo de infracción**",
@@ -43,27 +60,41 @@ def show_payments(payments_data):
         f"{len(payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)])} Actas".replace(
             ",", "."), delta=f"tocheck: {0}", help="Help")
     if opcion_de_vista == "Gráficos":
-        columna_graficos.plotly_chart(barplot_by_type(
+        container = columna_graficos.container(border=True)
+        container.caption("**Recaudado por día y tipo de infracción**")
+        container.plotly_chart(barplot_by_type(
             payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)]))
         with columna_graficos:
             columna_izquierda, columna_derecha = st.columns(2)
-            columna_izquierda.caption("**Recaudado por Tipo de Infracción**")
-            columna_izquierda.plotly_chart(raised_by_type(payments_data_filtered), key="adas")
-            columna_derecha.caption(
+            container = columna_izquierda.container(border=True)
+            container.caption("**Recaudado por Tipo de Infracción**")
+            container.plotly_chart(raised_by_type(payments_data_filtered), key="adas")
+            container = columna_derecha.container(border=True)
+            container.caption(
                 f"**Ranking de Medios de Pago** _({tipos_label if len(tipo_infracciones_elegido) != payments_data_filtered["Tipo infraccion"].nunique() else "Todas las infracciones"}_)")
-            columna_derecha.plotly_chart(ranking_pagos_plot(get_ranking_medios_de_pago(
+            container.plotly_chart(ranking_pagos_plot(get_ranking_medios_de_pago(
                 payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)])),
                 key="aadas")
     else:
         with columna_graficos:
             columna_izquierda, columna_derecha = st.columns(2)
             columna_izquierda.write("**Actas Pagadas**")
+            df = payments_data_filtered.loc[
+                payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)].drop(
+                columns=["fecha_acreditacion", "created_at", "estado", "Tasa administrativa", "Tasa infraccion", "tipo",
+                         "fecha_pago",
+                         "medio_pago", "juzgado"]).sort_values(by="comprobante_nro", ascending=False)
+
+            styled_df = (
+                df.style
+                .map(color_tipo_infraccion, subset=["Tipo infraccion"])
+            )
+
             columna_izquierda.dataframe(
-                payments_data_filtered.loc[
-                    payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)].drop(
-                    columns=["numero_cuenta", "comprobante_nro", "total", "juzgado", "created_at", "fecha_pago",
-                             "estado"]),
-                hide_index=True)
+                styled_df,
+                hide_index=True,
+                width="stretch",
+            )
             actas_pagas_table_excel = to_excel_reporte(
                 payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)])
             columna_izquierda.download_button(
@@ -86,6 +117,10 @@ def show_payments(payments_data):
                 file_name="ranking_pagos_lanus.xlsx",
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             )
+    style_metric_cards(background_color="white", border_left_color="#b30000", box_shadow=False,
+                       border_color="azure",
+                       border_radius_px=30)
+
     #
     # columna_izquierda, columna_derecha = st.columns([2, 3])
     #

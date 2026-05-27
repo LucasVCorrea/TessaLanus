@@ -1,0 +1,48 @@
+cookie:
+  expiry_days: 0.0416667
+  key: clave_super_secreta_987123ASDQWE
+  name: auditoria_logim
+credentials:
+  usernames:
+    plietti:
+      name: Pablo Lietti
+      password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
+      role: owner
+    pbello:
+      name: Priscila Bello
+      password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
+      role: owner
+    pfmendez:
+      name: Pamela Flores Mendez
+      password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
+      role: owner
+    mchamorro:
+      name: May Chamorro
+      password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
+      role: owner
+    sarredondo:
+      name: Sabrina Arredondo
+      password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
+      role: owner
+    lcorrea:
+      name: Lucas Correa
+      password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
+      role: owner
+    jsuarez:
+      name: Jorge Suarez
+      password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
+      role: owner
+    rcrilchuk:
+      name: Ramiro Crilchuk
+      password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
+      role: admin
+    lucas:
+      name: User Test
+      password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
+      role: viewer
+
+login_form:
+  login_button: Ingresar
+  password: Clave
+  title: Inicio de sesion
+  username: Usuario

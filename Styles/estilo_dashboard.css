@@ -1,0 +1,80 @@
+#MainMenu {
+    visibility: hidden;
+}
+
+/*[data-testid="stAppViewContainer"] {*/
+/*    background: radial-gradient(circle at top left, #00004d, #4775d1);*/
+/*    background-attachment: fixed;*/
+/*}*/
+/*[data-testid="stExpander"]{*/
+/*    background: linear-gradient(to right, #009999, #85a3e0);*/
+/*    color: white;*/
+/*    border-radius: 10px;*/
+/*    padding: 0.5rem;*/
+/*}*/
+footer {
+    visibility: hidden;
+}
+
+/*header {*/
+/*    visibility: hidden;*/
+/*}*/
+
+.block-container {
+    padding-top: 0rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/*.st-emotion-cache-7czcpc {
+    border-radius: 5.5rem;
+    border: solid 0.5px #001a4d;
+}
+*/
+.st-emotion-cache-qbiigm {
+    border: 1px solid rgb(49 51 63 / 4%);
+    border-radius: 0.5rem;
+    padding: calc(-1px + 1rem);
+    background: #ffffff;
+}
+
+/*Esto le da el blanco a los containers*/
+
+.st-emotion-cache-1q7kxap {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    min-width: 1rem;
+    flex-flow: column;
+    flex: 1 1 0%;
+    -webkit-box-align: start;
+    align-items: start;
+    -webkit-box-pack: start;
+    justify-content: start;
+    border: 1px solid #9f4e4e0a;
+    border-radius: 0.5rem;
+    background: white;
+    padding: calc(-1px + 1rem);
+    overflow: visible;
+}
+<style>
+/*Esto le da el transparent a la barra de arriba*/
+.st-emotion-cache-5wbxbi {
+    position: absolute;
+    top: 0px;
+    ft: 0px;
+    right: 0px;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    height: 3.75rem;
+    min-height: 3.75rem;
+    width: 100%;
+    background: #fdfdfd00;
+    outline: none;
+    z-index: 999990;
+    pointer-events: auto;
+    font-size: 0.875rem;
+}

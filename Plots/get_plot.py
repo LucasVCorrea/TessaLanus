@@ -9,13 +9,15 @@ def raised_by_type(dataframe):
     raised_by_type_grouop = dataframe.groupby("Tipo infraccion").agg({"total": ["sum"]}).reset_index()
     raised_by_type_grouop.columns = ["Tipo infraccion", "total"]
     fig = px.pie(raised_by_type_grouop, names="Tipo infraccion", values="total",
-                 color_discrete_sequence=["#e6e6ff", "BlueViolet", "MidnightBlue", "Red"]
+                 color_discrete_sequence=["Crimson", "#3333cc", "#00ff99", "yellow"]
                  , category_orders={"Tipo infraccion": ["Fotomulta",
                                                         "Velocidad",
                                                         "PDA",
                                                         "Camara movil"]}
                  )
     fig.update_layout(
+        paper_bgcolor="white",
+        plot_bgcolor="white",
         font=dict(color='black'),
         xaxis=dict(
             title=dict(font=dict(color='black')),
@@ -45,8 +47,10 @@ def notificated_by_location(dataframe):
     notificated_by_grouop = dataframe.groupby("localidad").agg({"lote_id": ["count"]}).reset_index()
     notificated_by_grouop.columns = ["Localidad", "Notificadas"]
     fig = px.pie(notificated_by_grouop.nlargest(5, "Notificadas"), names="Localidad", values="Notificadas",
-                 color_discrete_sequence=px.colors.qualitative.Set3)
+                 color_discrete_sequence=["#e60000","#bf4040","#ff0080","#751aff","#ffff1a"])
     fig.update_layout(
+        paper_bgcolor="white",
+        plot_bgcolor="white",
         font=dict(color='black'),
         xaxis=dict(
             title=dict(font=dict(color='black')),
@@ -73,16 +77,17 @@ def notificated_by_location(dataframe):
 
 
 def daily_payments_by_type(dataframe):
-    daily_payments_by_type_grouop = dataframe.groupby(["fecha_acreditacion", "Tipo infraccion"]).agg(
-        {"total": ["sum"]}).reset_index()
-    daily_payments_by_type_grouop.columns = ["Fecha pago", "Tipo infraccion", "total"]
-    fig = px.bar(daily_payments_by_type_grouop, x="Fecha pago", y="total", color="Tipo infraccion",
-                 color_discrete_sequence=["#e6e6ff", "BlueViolet", "MidnightBlue", "Red"], text_auto=True,
-                 category_orders={"Tipo infraccion": ["Fotomulta",
-                                                      "Velocidad",
-                                                      "PDA",
-                                                      "Camara movil"]})
+    daily_payments_by_type_grouop = dataframe.groupby("fecha_acreditacion").agg(
+        {"numero": ["count"]}).reset_index()
+    daily_payments_by_type_grouop.columns = ["Fecha", "Actas Acreditadas"]
+    # daily_payments_by_type_grouop["total"] = daily_payments_by_type_grouop["total"].map(lambda x:round(int(x)))
+    fig = px.bar(daily_payments_by_type_grouop, x="Fecha", y="Actas Acreditadas",
+                 color_discrete_sequence=["#b30000", "MidnightBlue", "Red"], text_auto=True,
+)
     fig.update_layout(
+
+        paper_bgcolor="white",
+        plot_bgcolor="white",
         font=dict(color='black'),
         xaxis=dict(
             title=dict(font=dict(color='black')),
@@ -92,14 +97,9 @@ def daily_payments_by_type(dataframe):
             title=dict(font=dict(color='black'), ),
             tickfont=dict(color='black'),
         ),
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=-0.4,
-            xanchor="center",
-            x=0.5
-        ),
-        height=400,
+        barcornerradius=8,
+        height=435,
+
     )
     fig.update_traces(textposition='inside', textfont_size=14)
     return fig
@@ -173,6 +173,8 @@ def show_ranking_medios_de_pago(dataframe):
     fig = px.pie(ranking.sort_values(by="total", ascending=False), values="total", names="Medio pago",
                  color="Medio pago", color_discrete_sequence=px.colors.qualitative.Set2, hole=.5)
     fig.update_layout(
+        paper_bgcolor="white",
+        plot_bgcolor="white",
         font=dict(color='black'),
         xaxis=dict(
             title=dict(font=dict(color='black')),
@@ -237,7 +239,7 @@ def barplot_by_type(df):
     agrupado = df.groupby(["fecha_acreditacion", "Tipo infraccion"]).agg({"numero": ["count"]}).reset_index()
     agrupado.columns = ["fecha", "tipo", "acta"]
     fig = px.bar(agrupado, color="tipo", x="fecha", y="acta",
-                 color_discrete_sequence=["#e6e6ff", "BlueViolet", "MidnightBlue", "Red"]
+                 color_discrete_sequence=["Crimson", "#3333cc", "#00ff99", "yellow"]
                  , category_orders={"tipo": ["Fotomulta",
                                              "Velocidad",
                                              "PDA",
