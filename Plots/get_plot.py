@@ -47,7 +47,7 @@ def notificated_by_location(dataframe):
     notificated_by_grouop = dataframe.groupby("localidad").agg({"lote_id": ["count"]}).reset_index()
     notificated_by_grouop.columns = ["Localidad", "Notificadas"]
     fig = px.pie(notificated_by_grouop.nlargest(5, "Notificadas"), names="Localidad", values="Notificadas",
-                 color_discrete_sequence=["#e60000","#bf4040","#ff0080","#751aff","#ffff1a"])
+                 color_discrete_sequence=["#e60000", "#bf4040", "#ff0080", "#751aff", "#ffff1a"])
     fig.update_layout(
         paper_bgcolor="white",
         plot_bgcolor="white",
@@ -83,7 +83,7 @@ def daily_payments_by_type(dataframe):
     # daily_payments_by_type_grouop["total"] = daily_payments_by_type_grouop["total"].map(lambda x:round(int(x)))
     fig = px.bar(daily_payments_by_type_grouop, x="Fecha", y="Actas Acreditadas",
                  color_discrete_sequence=["#b30000", "MidnightBlue", "Red"], text_auto=True,
-)
+                 )
     fig.update_layout(
 
         paper_bgcolor="white",
@@ -265,6 +265,8 @@ def ranking_pagos_plot(df):
     fig = px.pie(df, names="Medio Pago", values="total", color="Medio Pago",
                  color_discrete_sequence=px.colors.qualitative.Set2, hole=.5)
     fig.update_layout(
+        paper_bgcolor="white",
+        plot_bgcolor="white",
         font=dict(color='black'),
         xaxis=dict(
             title=dict(font=dict(color='black')),
@@ -287,4 +289,79 @@ def ranking_pagos_plot(df):
         textfont_size=16,
 
     )
+    return fig
+
+
+def daily_notifications_plot(df):
+    df["Fecha Lote"] = df["Fecha Lote"].dt.date
+    if df["localidad"].nunique() < 4:
+        agrupado = df.groupby(["Fecha Lote", "localidad"]).agg({"acta_id": ["count"]}).reset_index()
+        agrupado.columns = ["Fecha", "Localidad", "Notificaciones"]
+        agrupado["Notificaciones"] = agrupado["Notificaciones"].astype(int)
+        fig = px.bar(agrupado, x="Fecha", y="Notificaciones", text_auto=True, color="Localidad",
+                     color_discrete_sequence=["#b30000", "MidnightBlue", "yellow"])
+        fig.update_layout(
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+            font=dict(color='black'),
+            xaxis=dict(
+                title=dict(font=dict(color='black')),
+                tickfont=dict(color='black'),
+            ),
+            yaxis=dict(
+                title=dict(font=dict(color='black'), ),
+                tickfont=dict(color='black'),
+            ),
+            barcornerradius=8,
+            height=435,
+
+        )
+        fig.update_traces(textposition='inside', textfont_size=14)
+    else:
+        agrupado = df.groupby(["Fecha Lote", "localidad"]).agg({"acta_id": ["count"]}).reset_index()
+        agrupado.columns = ["Fecha", "Localidad", "Notificaciones"]
+        agrupado = agrupado.pivot_table(index="Fecha", columns="Localidad", values="Notificaciones").T
+        data_pivot = agrupado.sort_index(ascending=False)
+
+        z_raw = data_pivot.values
+        z = np.where(np.isnan(z_raw), -1, z_raw)  # NaNs se marcan con -1 para identificar visualmente
+
+        text = np.where(np.isnan(z_raw), "", np.round(z_raw, 0).astype(int).astype(str))
+
+        x = data_pivot.columns.astype(str)
+        y = data_pivot.index.astype(str)
+
+        fig = go.Figure(data=go.Heatmap(
+            z=z,
+            x=x,
+            y=y,
+            colorscale=px.colors.sequential.Reds,
+            text=text,
+            texttemplate="%{text}",
+            hovertemplate="Fecha: %{x}<br>Localidad: %{y}<br>Notificaciones: %{z}<extra></extra>",
+            xgap=0.5,
+            ygap=0.5,
+            colorbar=dict(
+                title=dict(text="Actas Notificadas", font=dict(color="black")),
+                tickfont=dict(color="black")
+            )
+        ))
+
+        fig.update_layout(
+            xaxis_title="Fecha",
+            yaxis_title="Localidad",
+            xaxis_tickangle=-45,
+            xaxis=dict(
+                type="category",
+                tickfont=dict(color="black"),
+            ),
+            yaxis=dict(
+                type="category",
+                tickfont=dict(color="black"),
+            ),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            margin=dict(l=20, r=20, t=60, b=20),
+        )
+        fig.update_traces(textfont=dict(size=13))
     return fig

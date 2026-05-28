@@ -179,3 +179,8 @@ def to_excel_reporte(df):
 #         if st.sidebar.button("Cerrar sesión"):
 #             st.session_state["user"] = None
 #             st.experimental_rerun()
+
+def payed_notifications(notifcations_dataframe, payments_dataframe):
+    payments_dataframe = payments_dataframe.rename(columns={"numero": "acta"})
+    merged = pd.merge(notifcations_dataframe, payments_dataframe, on="acta")
+    return merged.drop_duplicates(subset="acta", keep="first")

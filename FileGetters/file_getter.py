@@ -39,7 +39,7 @@ def get_ranking_medios_de_pago(df):
         df = clean_medios_de_pago(df)
         df = df.groupby("medio_pago").agg({"total":["sum"]}).reset_index()
         df.columns = ["Medio Pago", "total"]
-        return df
+        return df.nlargest(5, "total")
     except FileNotFoundError:
         return pd.DataFrame()
 

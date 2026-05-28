@@ -7,7 +7,7 @@ import format
 import interaction
 from Styles.estilos import aplicar_estilo_login
 
-st.set_page_config(page_title="BerissoUNLaM", layout="wide")
+st.set_page_config(page_title="LanusUNLaM", layout="wide",page_icon="Icons/Diseño sin título (2).png")
 
 def mostrar_vista_admin(rol):
     interaction.interaction(rol)
@@ -37,7 +37,7 @@ if st.session_state['authentication_status'] is None:
                                                    'Username': ':material/contacts_product: **Usuario**',
                                                    'Password': '**:material/key_vertical: Contraseña**',
                                                    'Login': ':material/login: :red[**Ingresar al Panel**]'})
-    # st.sidebar.image("Icons/Algo Algo Algo (2).png", width=300)
+    st.sidebar.image("Icons/Algo Algo Algo (2).png", width=300)
 
     if login_result:
         name, authentication_status, username = login_result
@@ -50,7 +50,7 @@ if st.session_state['authentication_status'] is None:
         role = current_user.get('role', '')
         format.registrar_historial_acceso(st.session_state['name'], st.session_state['username'], role)
 if st.session_state['authentication_status']:
-    # authenticator.logout(':blue[Cerrar sesión]', location='sidebar')
+    authenticator.logout(':blue[Cerrar sesión]', location='sidebar')
     current_user = config['credentials']['usernames'][st.session_state['username']]
     role = current_user.get('role', '')
     st.sidebar.success(f"Usuario: **{st.session_state['name']}**", icon=":material/person:")
@@ -64,7 +64,7 @@ if st.session_state['authentication_status']:
     if st.session_state['pagina'] == 'dashboard':
         mostrar_vista_admin(role)
 
-    # st.sidebar.image("Icons/Algo Algo Algo (2).png", width=300)
+    st.sidebar.image("Icons/Algo Algo Algo (2).png", width=300)
 if st.session_state['authentication_status'] is False:
     col1, col2, col3 = st.columns([2, 1, 2])
     with col2:

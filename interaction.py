@@ -3,11 +3,12 @@ from streamlit_extras.metric_cards import style_metric_cards
 
 from Displays.camera_activity import show_camera_activity
 from Displays.general_overview import show_general_overview
+from Displays.notifications import mostrar_pagina_lotes
 from Displays.payments import show_payments
 from FileGetters.file_getter import *
 
 def interaction(rol):
-    st.set_page_config(page_title="BerissoUNLaM", page_icon="Icons/page_icon.png", layout="wide",
+    st.set_page_config(page_title="LanusUNLaM", page_icon="Icons/Diseño sin título (2).png", layout="wide",
                        initial_sidebar_state='expanded')
     #
     # from displays.juzgados import mostrar_pagina_juzgados
@@ -57,11 +58,11 @@ def interaction(rol):
             st.rerun()
         show_payments(get_actas_pagadas_dataframe())
 
-    # elif st.session_state.pagina_actual == "lotes":
-    #     if st.button("Volver a la pantalla general", type="primary", icon=":material/keyboard_return:"):
-    #         st.session_state.pagina_actual = "inicio"
-    #         st.rerun()
-    #     mostrar_pagina_lotes()
+    elif st.session_state.pagina_actual == "lotes":
+        if st.button("Volver a la pantalla general", type="primary", icon=":material/keyboard_return:"):
+            st.session_state.pagina_actual = "inicio"
+            st.rerun()
+        mostrar_pagina_lotes(get_notificaciones_dataframe(),get_actas_pagadas_dataframe())
     #
     # elif st.session_state.pagina_actual == "juzgados":
     #     if st.button("Volver a la pantalla general", type="primary", icon=":material/keyboard_return:"):

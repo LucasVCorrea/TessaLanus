@@ -43,6 +43,10 @@ def clean_notifications_data(dataframe):
     dataframe["Mes"] = dataframe["Mes"].map(traducir_mes)
     dataframe["Tipo infraccion"] = dataframe["acta"].map(lambda x: x.split("-")[0]).map(get_tipos_notificaciones())
     dataframe["localidad"] = dataframe["localidad"].apply(normalizar_localidad)
+    dataframe["Mes_num"] = pd.to_datetime(
+        dataframe["Fecha Lote"]
+    ).dt.month
+
     return dataframe
 
 
