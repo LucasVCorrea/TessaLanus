@@ -3,7 +3,7 @@ from streamlit_extras.metric_cards import style_metric_cards
 from datetime import date
 import pandas as pd
 from ExtraFunctions.extras import payed_notifications
-from Plots.get_plot import daily_notifications_plot
+from Plots.get_plot import daily_notifications_plot, notifications_by_type
 from Styles.estilos import aplicar_estilo_dashboard
 
 
@@ -69,22 +69,23 @@ def mostrar_pagina_lotes(notifications_dataframe, payments_dataframe):
         f"**Total de Actas notificadas** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}",
         value=f":red[:material/stacked_email:] {lotes_filtrado["acta_id"].nunique()}", delta=f"{100}")
     metrica_2.metric(f"**Por Email** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}",
-                     value=f":red[:material/attach_email:] {1}",
+                     value=f":red[:material/attach_email:] {lotes_filtrado.loc[lotes_filtrado['notific_type'] == 'Email', 'acta_id'].nunique()}",
                      delta=f"{100}")
     metrica_3.metric(f"**Bajo Puerta** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}",
-                     value=f":red[:material/garage_door:] {0}",
+                     value=f":red[:material/garage_door:] {lotes_filtrado.loc[lotes_filtrado['notific_type'] == 'Bajo Puerta', 'acta_id'].nunique()}",
                      delta=f"{-100}")
     metrica_4.metric(
         f"**Total de Actas pagadas** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}",
-        value=f":green[:material/paid:] {payed_notifications(lotes_filtrado, payments_dataframe)['acta_id'].nunique()}",
-        delta=f"{-100}")
+        value=f":green[:material/paid:] {payed_notifications(lotes_filtrado, payments_dataframe)['acta_id'].nunique()} Actas",
+        delta=f"{-100}",
+        help=f"La cantidad de Actas Pagadas Equivalen a **${payed_notifications(lotes_filtrado, payments_dataframe)['total'].astype(int).sum():,.0f} Pesos**".replace(
+            ",", "."))
     if vista_elegida == "Indicadores":
-        # st.dataframe(payed_notifications(lotes_filtrado, payments_dataframe), hide_index=True)
-
         columna_barplot, columna_donut = st.columns([2, 1])
         with columna_donut:
             container = st.container(border=True)
-            container.subheader("Donut diferentes Notificaciones (WIP)", anchor=False)
+            container.subheader("Actas Notificadas Por Tipo", anchor=False)
+            container.plotly_chart(notifications_by_type(lotes_filtrado), width="stretch")
 
         with columna_barplot:
             container = st.container(border=True)
@@ -94,10 +95,17 @@ def mostrar_pagina_lotes(notifications_dataframe, payments_dataframe):
             container.plotly_chart(daily_notifications_plot(lotes_filtrado), width="stretch")
     else:
         columna_barplot, columna_donut = st.columns([2, 1])
+        with columna_barplot:
+            container = st.container(border=True)
+            container.subheader("Cantidad de Actas notificadas por Localidad", anchor=False)
+            actas_por_localidad = lotes_filtrado.groupby("localidad")["acta_id"].nunique().reset_index()
+            actas_por_localidad.columns = ["Localidad", "Cantidad de Actas Notificadas"]
+            container.dataframe(actas_por_localidad.sort_values(by="Cantidad de Actas Notificadas", ascending=False),
+                                width="stretch", hide_index=True)
         with columna_donut:
             container = st.container(border=True)
             container.subheader("Listado de Actas notificadas en el período y localidad seleccionado/s", anchor=False)
-            container.dataframe(lotes_filtrado[["acta_id", "localidad", "Fecha Lote"]], hide_index=True,
+            container.dataframe(lotes_filtrado[["acta_id", "localidad", "Fecha Lote","notific_type"]], hide_index=True,
                                 width="stretch")
 
     style_metric_cards(background_color="white", border_left_color="#b30000", box_shadow=False,

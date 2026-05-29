@@ -1,7 +1,7 @@
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-
+import pandas as pd
 from FileGetters.file_getter import get_ranking_medios_de_pago
 
 
@@ -364,4 +364,233 @@ def daily_notifications_plot(df):
             margin=dict(l=20, r=20, t=60, b=20),
         )
         fig.update_traces(textfont=dict(size=13))
+    return fig
+
+def barplot_diario_por_revisor(berisso_nivel_5):
+    aceptadas_rechazadas_diario = (
+        berisso_nivel_5
+        .groupby(["Fecha", "Auditor"])
+        .agg({"Aceptadas": "sum", "Rechazadas": "sum"})
+        .reset_index()
+    )
+
+    df_melted = pd.melt(
+        aceptadas_rechazadas_diario,
+        id_vars=["Fecha", "Auditor"],
+        var_name="Resultado",
+        value_name="Presunciones de Nivel 5"
+    )
+
+    hover_info = (
+        df_melted.groupby(["Fecha", "Resultado"])
+        .apply(lambda g: "<br>".join([
+            f"- {g.name[1]} {row['Auditor']}: {row['Presunciones de Nivel 5']}"
+            for _, row in g.iterrows()
+        ]))
+        .reset_index(name="hover_text")
+    )
+
+    df_sum = (
+        df_melted.groupby(["Fecha", "Resultado"], as_index=False)
+        ["Presunciones de Nivel 5"].sum()
+        .merge(hover_info, on=["Fecha", "Resultado"])
+    )
+
+    df_sum["Total de la fecha"] = (
+        df_sum.groupby("Fecha")["Presunciones de Nivel 5"].transform("sum")
+    )
+
+    fig = px.bar(
+        df_sum,
+        x="Fecha",
+        y="Presunciones de Nivel 5",
+        color="Resultado",
+        text_auto=True,
+        hover_data={"hover_text": True, "Presunciones de Nivel 5": True},
+        color_discrete_sequence=["Crimson", "#3333ff"]
+    )
+
+    fig.update_traces(
+        hovertemplate="%{customdata[0]}<extra></extra>"
+    )
+
+    fig.update_layout(
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        font=dict(color='black'),
+        xaxis=dict(
+            title=dict(font=dict(color='black')),
+            tickfont=dict(color='black'),
+        ),
+        yaxis=dict(
+            title=dict(font=dict(color='black')),
+            tickfont=dict(color='black'),
+        ),
+        barcornerradius=8,
+        annotations=[
+            dict(
+                x=fecha,
+                y=total,
+                text=f"Total: {total}",
+                showarrow=False,
+                yshift=30,
+                font=dict(color="black", size=12)
+            )
+            for fecha, total in (
+                df_sum.groupby("Fecha")["Presunciones de Nivel 5"].sum().items()
+            )
+        ]
+    )
+    return fig
+
+
+def grilla_revisores_nivel_5(berisso_nivel_5, fecha_desde, fecha_hasta):
+    heatmap_auditor_nivel5 = (
+        berisso_nivel_5
+        .groupby(["Fecha", "Auditor"])
+        .agg({"Total": ["sum"]})
+        .reset_index()
+    )
+    heatmap_auditor_nivel5.columns = ["Fecha", "Auditor", "Total"]
+    heatmap_auditor_nivel5["Fecha"] = pd.to_datetime(heatmap_auditor_nivel5["Fecha"]).dt.date
+
+    pivot = heatmap_auditor_nivel5.pivot_table(
+        index="Fecha",
+        columns="Auditor",
+        values="Total"
+    ).fillna(-1)
+
+    z = np.where(pivot.T.values == "No registró", -1, pivot.T.values.astype(float))
+    text = np.where(z == -1, "No registró", np.round(z, 2).astype(str))
+
+    x = pivot.index.astype(str)
+    y = pivot.columns.astype(str)
+
+    zmin, zmax = -1, np.nanmax(z)
+    base_scale = px.colors.sequential.Reds
+    colorscale = [[0.0, "darkgray"], [0.001, base_scale[0]]]
+    for i, c in enumerate(base_scale):
+        colorscale.append([(i + 1) / len(base_scale), c])
+
+    fig = go.Figure(data=go.Heatmap(
+        z=z,
+        x=x,
+        y=y,
+        colorscale=colorscale,
+        zmin=zmin,
+        zmax=zmax,
+        text=text,
+        texttemplate="%{text}",
+        hovertemplate="<b>Fecha: %{x}</b><br>Auditor: %{y}<br>Total: %{z}<extra></extra>",
+        xgap=1,
+        ygap=1,
+        colorbar=dict(title="Presunciones Revisadas<br>Nivel 5")
+    ))
+
+    fig.update_layout(
+        title=f"Actividad de Revisores Nivel 5 desde {fecha_desde} al {fecha_hasta}",
+        xaxis_title="Fecha",
+        yaxis_title="Revisor de Nivel 5",
+        xaxis_tickangle=-45,
+        xaxis=dict(type="category"),
+        yaxis=dict(type="category"),
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        font=dict(color='black')
+    )
+    return fig
+
+def show_camera_activity(dataframe_nivel_5_berisso):
+    camera_activity = dataframe_nivel_5_berisso.groupby(["Fecha", "Código de cámara"]).agg(
+        {"Aceptadas": ["sum"],
+         "Rechazadas": ["sum"]}).reset_index()
+    camera_activity.columns = ["Fecha", "Ubicacion", "Aceptadas", "Rechazadas"]
+    camera_activity["Total"] = camera_activity["Aceptadas"] + camera_activity["Rechazadas"]
+    fig = px.bar(camera_activity, x="Fecha", y="Aceptadas", color="Ubicacion", text_auto=True,
+                 color_discrete_sequence=["#3333ff", "#33ffcc", "#ff3399", "#ff8533", "#ffff33"])
+    fig.update_layout(
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        font=dict(color='black'),
+        xaxis=dict(
+            title=dict(font=dict(color='black')),
+            tickfont=dict(color='black'),
+        ),
+        yaxis=dict(
+            title=dict(font=dict(color='black'), ),
+            tickfont=dict(color='black'),
+        ),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.4,
+            xanchor="center",
+            x=0.5
+        ),
+        height=490,
+        barcornerradius=8
+
+    )
+    fig.update_traces(
+        textfont_size=12,
+    )
+    return fig
+
+def notifications_by_type(dataframe):
+    notifications = (
+        dataframe
+        .groupby("notific_type")
+        .agg({"acta_id": "nunique"})
+        .reset_index()
+    )
+
+    notifications.columns = [
+        "Tipo de Notificacion",
+        "Actas notificadas"
+    ]
+
+    total = notifications["Actas notificadas"].sum()
+
+    fig = px.pie(
+        notifications,
+        names="Tipo de Notificacion",
+        values="Actas notificadas",
+        color_discrete_sequence=[
+            "crimson",
+            "orange",
+            "#ff3399",
+            "#ff8533",
+            "#ffff33"
+        ],
+        hole=0.6,
+        category_orders={"Tipo de Notificacion": ["Email", "Bajo Puerta"]}
+    )
+
+    # TEXTO CENTRADO
+    fig.add_annotation(
+        text=f"<b>{total}</b><br>entregadas",
+        x=0.5,
+        y=0.5,
+        font=dict(size=22, color="black"),
+        showarrow=False
+    )
+
+    fig.update_layout(
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        font=dict(color="black"),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.4,
+            xanchor="center",
+            x=0.5
+        ),
+        height=350,
+    )
+
+    fig.update_traces(
+        textfont_size=12,
+    )
+
     return fig

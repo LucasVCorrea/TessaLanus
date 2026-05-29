@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_extras.metric_cards import style_metric_cards
 
 from Displays.camera_activity import show_camera_activity
+from Displays.final_review import mostrar_pagina_nivel_5
 from Displays.general_overview import show_general_overview
 from Displays.notifications import mostrar_pagina_lotes
 from Displays.payments import show_payments
@@ -70,8 +71,8 @@ def interaction(rol):
     #         st.rerun()
     #     mostrar_pagina_juzgados()
     #
-    # elif st.session_state.pagina_actual == "actividad":
-    #     if st.button("Volver a la pantalla general", type="primary", icon=":material/keyboard_return:"):
-    #         st.session_state.pagina_actual = "inicio"
-    #         st.rerun()
-    #     mostrar_pagina_actividad()
+    elif st.session_state.pagina_actual == "actividad":
+        if st.button("Volver a la pantalla general", type="primary", icon=":material/keyboard_return:"):
+            st.session_state.pagina_actual = "inicio"
+            st.rerun()
+        mostrar_pagina_nivel_5(get_actividad_nivel_5())

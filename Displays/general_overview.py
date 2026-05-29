@@ -59,7 +59,7 @@ def show_general_overview(payments_filtered, notification_filtered):
     promedio = notifications_by_day(notification_filtered)
 
     col5.metric(
-        ":material/pace: **Promedio notificado** por Fecha",
+        ":material/pace: **Promedio notificado** por Día",
         value=0 if pd.isna(promedio) else int(promedio),
         help=f"Indica que entre el **_{payments_filtered["fecha_acreditacion"].min().strftime('%d/%m/%Y')}_** y el "
              f"**_{payments_filtered["fecha_acreditacion"].max().strftime('%d/%m/%Y')}_** se notificaron en promedio "
@@ -67,7 +67,8 @@ def show_general_overview(payments_filtered, notification_filtered):
     )
     col4.metric("**Tasa adminstrativa**",
                 f"${payments_filtered["Tasa administrativa"].astype(int).sum():,.0f}".replace(",", "."))
-    col3.metric("**Recaudado por Infracciones**", f"${payments_filtered["Tasa infraccion"].astype(int).sum():,.0f}".replace(",", "."))
+    col3.metric("**Recaudado por Infracciones**",
+                f"${payments_filtered["Tasa infraccion"].astype(int).sum():,.0f}".replace(",", "."))
 
     columna_izquierda, columna_central, columna_derecha = st.columns([2, 2, 5])
     with columna_izquierda:

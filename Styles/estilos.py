@@ -15,6 +15,7 @@ def aplicar_estilo_login():
 
     st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
+
 def aplicar_estilo_dashboard():
     with open("Styles/estilo_dashboard.css") as f:
         css = f"<style>{f.read()}</style>"

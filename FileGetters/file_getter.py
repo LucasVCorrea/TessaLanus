@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ExtraFunctions.file_parser import clean_notifications_data, clean_payments_data, clean_medios_de_pago, \
-    clean_camera_activity
+    clean_activity
 
 
 def get_actas_pagadas_dataframe(csv_path="Files/Detalle de actas  Pagas-Lanus.csv"):
@@ -14,11 +14,17 @@ def get_actas_pagadas_dataframe(csv_path="Files/Detalle de actas  Pagas-Lanus.cs
         return pd.DataFrame()
 
 
-def get_notificaciones_dataframe(csv_path="Files/Listado de actas notificadas-Lanus.csv"):
+def get_notificaciones_dataframe(csv_path="Files/Listado de actas notificadas Lanus Bajo Puerta.csv", csv_path_2="Files/Listado de actas notificadas Lanus Email.csv"):
     try:
         df = pd.read_csv(csv_path, dtype=str)
         df = df.fillna("")
-        df = clean_notifications_data(df)
+        df["notific_type"] = "Bajo Puerta"
+
+        df_2 = pd.read_csv(csv_path_2, dtype=str)
+        df_2 = df_2.fillna("")
+        df_2["notific_type"] = "Email"
+
+        df = clean_notifications_data(df, df_2)
         return df
     except FileNotFoundError:
         return pd.DataFrame()
@@ -37,7 +43,7 @@ def get_ranking_medios_de_pago(df):
     try:
         df = df.fillna("")
         df = clean_medios_de_pago(df)
-        df = df.groupby("medio_pago").agg({"total":["sum"]}).reset_index()
+        df = df.groupby("medio_pago").agg({"total": ["sum"]}).reset_index()
         df.columns = ["Medio Pago", "total"]
         return df.nlargest(5, "total")
     except FileNotFoundError:
@@ -49,6 +55,16 @@ def get_camaras_dataframe(csv_path="Files/Recaudacion por Camara-Lanus.csv"):
         df = pd.read_csv(csv_path, dtype=str)
         df = df.fillna("")
         df = clean_camera_activity(df)
+        return df
+    except FileNotFoundError:
+        return pd.DataFrame()
+
+
+def get_actividad_nivel_5(csv_path="Files/actividad_nivel_5_lanus.csv"):
+    try:
+        df = pd.read_csv(csv_path, dtype=str)
+        df = df.fillna("")
+        df = clean_activity(df)
         return df
     except FileNotFoundError:
         return pd.DataFrame()

@@ -34,14 +34,15 @@ def clean_payments_data(dataframe):
     return dataframe
 
 
-def clean_notifications_data(dataframe):
+def clean_notifications_data(dataframe_bajo_puerta, dataframe_email):
+    dataframe = pd.concat([dataframe_bajo_puerta, dataframe_email], ignore_index=True)
     dataframe["Fecha Lote"] = pd.to_datetime(
         dataframe["Fecha Lote"],
     )
     dataframe["Año"] = dataframe["Fecha Lote"].dt.year
     dataframe["Mes"] = pd.to_datetime(dataframe["Fecha Lote"]).dt.month_name().str.capitalize()
     dataframe["Mes"] = dataframe["Mes"].map(traducir_mes)
-    dataframe["Tipo infraccion"] = dataframe["acta"].map(lambda x: x.split("-")[0]).map(get_tipos_notificaciones())
+    # dataframe["Tipo infraccion"] = dataframe["acta"].map(lambda x: x.split("-")[0]).map(get_tipos_notificaciones())
     dataframe["localidad"] = dataframe["localidad"].apply(normalizar_localidad)
     dataframe["Mes_num"] = pd.to_datetime(
         dataframe["Fecha Lote"]
@@ -100,4 +101,17 @@ def clean_camera_activity(dataframe):
     dataframe["latitud"] = dataframe["instalacion"].map(lambda x: coordenadas.get(x, (None, None))[0])
     dataframe["longitud"] = dataframe["instalacion"].map(lambda x: coordenadas.get(x, (None, None))[1])
     dataframe["cant"] = dataframe["cant"].astype(int)
+    return dataframe
+
+def clean_activity(dataframe):
+    dataframe["Fecha"] = pd.to_datetime(
+        dataframe["Fecha"],
+    )
+    dataframe["Año"] = dataframe["Fecha"].dt.year
+    dataframe["Mes"] = pd.to_datetime(dataframe["Fecha"]).dt.month_name().str.capitalize()
+    dataframe["Mes"] = dataframe["Mes"].map(traducir_mes)
+    dataframe['Aceptadas'] = pd.to_numeric(dataframe['Aceptadas'], errors='coerce')
+    dataframe['Rechazadas'] = pd.to_numeric(dataframe['Rechazadas'], errors='coerce')
+    dataframe['Total'] = pd.to_numeric(dataframe['Total'], errors='coerce')
+
     return dataframe
