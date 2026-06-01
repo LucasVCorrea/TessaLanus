@@ -5,11 +5,11 @@ import pandas as pd
 from FileGetters.file_getter import get_ranking_medios_de_pago
 
 
-def raised_by_type(dataframe):
+def  raised_by_type(dataframe):
     raised_by_type_grouop = dataframe.groupby("Tipo infraccion").agg({"total": ["sum"]}).reset_index()
     raised_by_type_grouop.columns = ["Tipo infraccion", "total"]
     fig = px.pie(raised_by_type_grouop, names="Tipo infraccion", values="total",
-                 color_discrete_sequence=["Crimson", "#3333cc", "#00ff99", "yellow"]
+                 color_discrete_sequence=["#ff3333", "#6600ff", "#00e6ac", "yellow",'deeppink']
                  , category_orders={"Tipo infraccion": ["Fotomulta",
                                                         "Velocidad",
                                                         "PDA",
@@ -47,7 +47,7 @@ def notificated_by_location(dataframe):
     notificated_by_grouop = dataframe.groupby("localidad").agg({"lote_id": ["count"]}).reset_index()
     notificated_by_grouop.columns = ["Localidad", "Notificadas"]
     fig = px.pie(notificated_by_grouop.nlargest(5, "Notificadas"), names="Localidad", values="Notificadas",
-                 color_discrete_sequence=["#e60000", "#bf4040", "#ff0080", "#751aff", "#ffff1a"])
+                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a","#ff00bf","#1affa3"])
     fig.update_layout(
         paper_bgcolor="white",
         plot_bgcolor="white",
@@ -82,7 +82,7 @@ def daily_payments_by_type(dataframe):
     daily_payments_by_type_grouop.columns = ["Fecha", "Actas Acreditadas"]
     # daily_payments_by_type_grouop["total"] = daily_payments_by_type_grouop["total"].map(lambda x:round(int(x)))
     fig = px.bar(daily_payments_by_type_grouop, x="Fecha", y="Actas Acreditadas",
-                 color_discrete_sequence=["#b30000", "MidnightBlue", "Red"], text_auto=True,
+                 color_discrete_sequence=["#ff3333", "MidnightBlue", "Red"], text_auto=True,
                  )
     fig.update_layout(
 
@@ -239,7 +239,7 @@ def barplot_by_type(df):
     agrupado = df.groupby(["fecha_acreditacion", "Tipo infraccion"]).agg({"numero": ["count"]}).reset_index()
     agrupado.columns = ["fecha", "tipo", "acta"]
     fig = px.bar(agrupado, color="tipo", x="fecha", y="acta",
-                 color_discrete_sequence=["Crimson", "#3333cc", "#00ff99", "yellow"]
+                 color_discrete_sequence=["#ff3333", "#6600ff", "#00e6ac", "yellow","deeppink"]
                  , category_orders={"tipo": ["Fotomulta",
                                              "Velocidad",
                                              "PDA",
@@ -263,7 +263,7 @@ def barplot_by_type(df):
 
 def ranking_pagos_plot(df):
     fig = px.pie(df, names="Medio Pago", values="total", color="Medio Pago",
-                 color_discrete_sequence=px.colors.qualitative.Set2, hole=.5)
+                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a","#ff1a1a","#1affa3"], hole=.5)
     fig.update_layout(
         paper_bgcolor="white",
         plot_bgcolor="white",
@@ -299,7 +299,7 @@ def daily_notifications_plot(df):
         agrupado.columns = ["Fecha", "Localidad", "Notificaciones"]
         agrupado["Notificaciones"] = agrupado["Notificaciones"].astype(int)
         fig = px.bar(agrupado, x="Fecha", y="Notificaciones", text_auto=True, color="Localidad",
-                     color_discrete_sequence=["#b30000", "MidnightBlue", "yellow"])
+                     color_discrete_sequence=["#ff3333", "#6600ff", "#00e6ac"])
         fig.update_layout(
             paper_bgcolor="white",
             plot_bgcolor="white",
@@ -313,7 +313,7 @@ def daily_notifications_plot(df):
                 tickfont=dict(color='black'),
             ),
             barcornerradius=8,
-            height=435,
+            height=335,
 
         )
         fig.update_traces(textposition='inside', textfont_size=14)
@@ -507,7 +507,7 @@ def show_camera_activity(dataframe_nivel_5_berisso):
     camera_activity.columns = ["Fecha", "Ubicacion", "Aceptadas", "Rechazadas"]
     camera_activity["Total"] = camera_activity["Aceptadas"] + camera_activity["Rechazadas"]
     fig = px.bar(camera_activity, x="Fecha", y="Aceptadas", color="Ubicacion", text_auto=True,
-                 color_discrete_sequence=["#3333ff", "#33ffcc", "#ff3399", "#ff8533", "#ffff33"])
+                 color_discrete_sequence=px.colors.sequential.RdBu)
     fig.update_layout(
         paper_bgcolor="white",
         plot_bgcolor="white",

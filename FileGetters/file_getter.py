@@ -4,7 +4,7 @@ from ExtraFunctions.file_parser import clean_notifications_data, clean_payments_
     clean_activity
 
 
-def get_actas_pagadas_dataframe(csv_path="Files/Detalle de actas  Pagas-Lanus.csv"):
+def get_actas_pagadas_dataframe(csv_path="Files/Detalle de actas Pagas-Lanus.csv"):
     try:
         df = pd.read_csv(csv_path, dtype=str)
         df = df.fillna("")

@@ -42,7 +42,7 @@ def interaction(rol):
             st.session_state.pagina_actual = "lotes"
             st.rerun()
 
-        elif colc.button("Ver **Actividad de Juzgados**", use_container_width=True, type="primary", icon=":material/balance:",
+        elif colc.button("Ver **Actividad de Juzgados _(trabajando)_**", use_container_width=True, type="primary", icon=":material/balance:",disabled=True,
                          help="### Información\n- Fallos Judiciales\n- Reducción de valores\n"):
             st.session_state.pagina_actual = "juzgados"
             st.rerun()

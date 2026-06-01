@@ -15,7 +15,6 @@ def color_tipo_infraccion(val):
         "Fotomulta": "background-color: #cc6666; color: black;",
         "Velocidad": "background-color: #ffe066; color: black;",
         "Camara movil": "background-color: #ffaa80; color: black;",
-        "Otros": "background-color: #6c757d; color: white;"
     }
 
     return colores.get(val, "")
@@ -24,7 +23,7 @@ def color_tipo_infraccion(val):
 def show_payments(payments_data):
     aplicar_estilo_dashboard()
 
-    payments_data_filtered = payments_data.fillna("Otros")
+    payments_data_filtered = payments_data.dropna()
     fecha_minima = payments_data.fecha_acreditacion.min()
     fecha_maxima = payments_data.fecha_acreditacion.max()
     columna_izquierda, columna_central, columna_derecha = st.columns([1, 2, 1])
@@ -61,7 +60,7 @@ def show_payments(payments_data):
             ",", "."), delta=f"tocheck: {0}", help="Help")
     if opcion_de_vista == "Gráficos":
         container = columna_graficos.container(border=True)
-        container.caption("**Recaudado por día y tipo de infracción**")
+        container.caption("**Cantidad de actas acreditadas por día y tipo de infracción**")
         container.plotly_chart(barplot_by_type(
             payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)]))
         with columna_graficos:

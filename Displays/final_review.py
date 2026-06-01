@@ -41,7 +41,6 @@ def mostrar_pagina_nivel_5(actividad_dataframe):
                 help=f"Entre el **{fecha_desde.strftime('%d/%m/%Y')}** y el **{fecha_hasta.strftime('%d/%m/%Y')}** se **Rechazaron** {actividad_dataframe.loc[(actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)][
                     "Rechazadas"].sum()} presunciones en Nivel 5")
 
-
     actividad_diaria, actividad_por_fiscalizador, actividad_por_camara = st.tabs(
         ["Actividad Diaria", "Actividad por Revisor", "Actividad por Cámara"])
     with actividad_diaria:
@@ -54,14 +53,16 @@ def mostrar_pagina_nivel_5(actividad_dataframe):
             f"Desde el **{fecha_desde.strftime('%d/%m/%Y')}** hasta el **{fecha_hasta.strftime('%d/%m/%Y')}**")
         container.plotly_chart(
             barplot_diario_por_revisor(
-                actividad_dataframe.loc[(actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]))
+                actividad_dataframe.loc[
+                    (actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]))
 
         with colb:
             container = st.container(border=True)
         container.subheader("Resumen por Fecha y Revisor", anchor=False)
         container.caption(
             f"Desde el **{fecha_desde.strftime('%d/%m/%Y')}** hasta el **{fecha_hasta.strftime('%d/%m/%Y')}**")
-        resumen = actividad_dataframe.loc[(actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]
+        resumen = actividad_dataframe.loc[
+            (actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]
         resumen = resumen.groupby(["Fecha", "Auditor"]).agg({"Aceptadas": ["sum"], "Rechazadas": ["sum"]}).reset_index()
         resumen.columns = ["Fecha", "Revisor", "Aceptadas", "Rechazadas"]
         resumen["Total"] = resumen["Aceptadas"] + resumen["Rechazadas"]
@@ -71,7 +72,8 @@ def mostrar_pagina_nivel_5(actividad_dataframe):
     with actividad_por_fiscalizador:
         container = st.container(border=True)
         container.plotly_chart(grilla_revisores_nivel_5(
-            actividad_dataframe.loc[(actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)],
+            actividad_dataframe.loc[
+                (actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)],
             fecha_desde.strftime('%d/%m/%Y'), fecha_hasta.strftime('%d/%m/%Y')))
     with actividad_por_camara:
         # TODO: UNCOMMENT THIS FOR THE NEXT VERSION ONLY **IF THE PROPER PEOPLE ACTUALLY CARE**
@@ -105,16 +107,37 @@ def mostrar_pagina_nivel_5(actividad_dataframe):
             f"Actividad de Cámaras entre el {fecha_desde.strftime('%d/%m/%Y')} y el {fecha_hasta.strftime('%d/%m/%Y')}",
             anchor=False,
             help=f"- Detalla la cantidad de presunciones que se aceptaron por el municipio en cada cámara entre el **{fecha_desde.strftime('%d/%m/%Y')}** y el **{fecha_hasta.strftime('%d/%m/%Y')}**")
-        container.plotly_chart(show_camera_activity(
-            actividad_dataframe.loc[(actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]),
-            width="stretch")
 
+        nivel_5_reducido = actividad_dataframe.loc[
+            (actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]
+        actividad_por_camara = nivel_5_reducido.groupby("Código de cámara").agg(
+            {"Aceptadas": "sum", "Rechazadas": "sum", "Total": "sum"}).reset_index()
+        actividad_por_camara["% Aceptadas"] = (
+                round(actividad_por_camara["Aceptadas"] / actividad_por_camara["Total"] * 100, 1)
+                .astype(str) + "%"
+        )
 
+        actividad_por_camara["% Rechazadas"] = (
+                round(actividad_por_camara["Rechazadas"] / actividad_por_camara["Total"] * 100, 1)
+                .astype(str) + "%"
+        )
 
-
-
-
-
+        actividad_por_camara["% del total"] = (
+                round(actividad_por_camara["Total"] / actividad_por_camara["Total"].sum() * 100, 1)
+                .astype(str) + "%"
+        )
+        eligio_ver_grafico = container.toggle("Ver gráfico")
+        if eligio_ver_grafico:
+            container.plotly_chart(show_camera_activity(
+                actividad_dataframe.loc[
+                    (actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]),
+                width="stretch")
+        else:
+            container.dataframe(actividad_por_camara.sort_values(by="Total", ascending=False), hide_index=True)
+        # nivel_5_reducido.group
+        # container.plotly_chart(show_camera_activity(
+        #     actividad_dataframe.loc[(actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]),
+        #     width="stretch")
 
     style_metric_cards(background_color="white", border_left_color="#b30000", box_shadow=False,
                        border_color="azure",

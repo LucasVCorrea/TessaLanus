@@ -31,7 +31,7 @@ def clean_payments_data(dataframe):
     dataframe["Tasa infraccion"] = dataframe["Tasa infraccion"].map(lambda x: x.replace(".", "")).map(
         lambda x: x.replace(",", ".")).astype(
         float)
-    return dataframe
+    return dataframe.loc[dataframe["Tipo infraccion"] != "Otros"]
 
 
 def clean_notifications_data(dataframe_bajo_puerta, dataframe_email):

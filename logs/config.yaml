@@ -32,8 +32,8 @@ credentials:
       name: Jorge Suarez
       password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
       role: owner
-    rcrilchuk:
-      name: Ramiro Crilchuk
+    avaccaro:
+      name: Ariel Vaccaro
       password: $2b$12$KfAXiUy5UVLH7FRA2Foq0Ol85jP6vFMfHcjmIzhAhUe9pGtW31Mmm
       role: admin
     lucas:
