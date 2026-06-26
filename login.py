@@ -50,9 +50,18 @@ if st.session_state['authentication_status'] is None:
         role = current_user.get('role', '')
         format.registrar_historial_acceso(st.session_state['name'], st.session_state['username'], role)
 if st.session_state['authentication_status']:
-    authenticator.logout(':blue[Cerrar sesión]', location='sidebar')
+    authenticator.logout(':red[Cerrar sesión]', location='sidebar')
     current_user = config['credentials']['usernames'][st.session_state['username']]
     role = current_user.get('role', '')
+    if role == "owner":
+        st.sidebar.button(
+            "Actividad de Usuarios",
+            icon=":material/online_prediction:",
+            key="conected",
+            type = "primary",
+            use_container_width=True,
+            on_click=format.mostrar_ultima_conexion,
+        )
     st.sidebar.success(f"Usuario: **{st.session_state['name']}**", icon=":material/person:")
 
     if st.sidebar.button('Ir al Panel', icon=":material/bar_chart_4_bars:", type="primary"):

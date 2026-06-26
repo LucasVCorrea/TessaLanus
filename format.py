@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 
 import pandas as pd
-
+import streamlit as st
 def get_meses_ordenados():
     return ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre",
             "Noviembre", "Diciembre"]
@@ -385,3 +385,103 @@ def clean_actividad_revisores(actividad_revisores):
 #         df.to_excel(writer, index=False, sheet_name='Reporte de cámaras')
 #     processed_data = output.getvalue()
 #     return processed_data
+def get_ultima_actividad_usuarios():
+    accesos = pd.read_csv("logs/historial_accesos.csv")
+
+    accesos["dt_limpio"] = pd.to_datetime(
+        accesos["Fecha y Hora"],
+        format="mixed",
+        dayfirst=True,
+        errors="coerce"
+    ) - pd.Timedelta(hours=3)
+
+    accesos = accesos.dropna(subset=["dt_limpio"])
+
+    # ⬇️ AGRUPAMOS POR USUARIO (NO POR NOMBRE)
+    tabla = (
+        accesos
+        .sort_values("dt_limpio")
+        .groupby("Usuario", as_index=False)
+        .last()
+    )
+
+    # Fechas formateadas
+    tabla["ultima_conex_fecha"] = tabla["dt_limpio"].dt.strftime("%d/%m/%Y")
+    tabla["ultima_conex_hora"] = tabla["dt_limpio"].dt.strftime("%H:%M:%S")
+
+    ahora = pd.Timestamp.now() - pd.Timedelta(hours=3)
+
+    tabla["minutos_desde_ultima_conexion"] = (
+            (ahora - tabla["dt_limpio"]).dt.total_seconds() // 60
+    ).astype(int).clip(lower=0)
+
+    tabla["dias_desde_ultima_conexion"] = (
+            ahora.normalize() - tabla["dt_limpio"].dt.normalize()
+    ).dt.days.astype(int)
+
+    return (
+        tabla
+        .sort_values("minutos_desde_ultima_conexion")
+        .head(20)
+    )
+
+
+# Esto en format:
+@st.dialog("🕑 Ultimas 20 Conexiones")
+def mostrar_ultima_conexion():
+    st.write(
+        ":green-badge[Conexión reciente] :orange-badge[2 ó más días sin conectarse] :red-badge[Tiempo sin conectarse]")
+    tabla_de_accesos = get_ultima_actividad_usuarios()
+
+    def texto_tiempo(row):
+        minutos = row["minutos_desde_ultima_conexion"]
+        dias = row["dias_desde_ultima_conexion"]
+
+        if minutos < 1:
+            return "recién conectado"
+
+        if dias <= 1:
+            if minutos < 60:
+                return f"{minutos} mins"
+            else:
+                h = minutos // 60
+                m = minutos % 60
+                if m == 0:
+                    return f"{h} hs"
+                return f"{h} hs, {m} mins"
+        else:
+            return f"{dias} días"
+
+    for _, row in tabla_de_accesos.iterrows():
+
+        dias = row["dias_desde_ultima_conexion"]
+        minutos = row["minutos_desde_ultima_conexion"]
+        horas = minutos // 60
+        rol = row["Rol"]
+
+        if rol == "moderador":
+            rol_badge_color = "violet"
+        elif rol == "admin":
+            rol_badge_color = "grey"
+        else:
+            rol_badge_color = "blue"
+        # Badge
+        if dias <= 2:
+            badge_label = "Activo"
+            badge_color = "green"
+        elif dias <= 14:
+            badge_label = "Inactivo rec."
+            badge_color = "orange"
+        else:
+            badge_label = "Inactivo"
+            badge_color = "red"
+
+        tiempo_txt = texto_tiempo(row)
+        # col1, col2 = st.columns([6, 2], gap="small")
+
+        # with col1:
+        st.write(
+            f":{badge_color}-badge[:material/person: **{row['Nombre']}**] :{rol_badge_color}-badge[{row['Rol']}] Ult. conexión: "
+            f"{row['ultima_conex_fecha']} {row['ultima_conex_hora']}"
+            f"({tiempo_txt})"
+        )
