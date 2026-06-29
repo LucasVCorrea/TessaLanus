@@ -180,7 +180,7 @@ def to_excel_reporte(df):
 #             st.session_state["user"] = None
 #             st.experimental_rerun()
 
-def payed_notifications(notifcations_dataframe, payments_dataframe):
+def payed_notifications(notifcations_dataframe, payments_dataframe, how):
     payments_dataframe = payments_dataframe.rename(columns={"numero": "acta"})
-    merged = pd.merge(notifcations_dataframe, payments_dataframe, on="acta")
+    merged = pd.merge(notifcations_dataframe, payments_dataframe, on="acta", how = how)
     return merged.drop_duplicates(subset="acta", keep="first")

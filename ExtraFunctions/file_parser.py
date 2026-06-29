@@ -103,6 +103,7 @@ def clean_camera_activity(dataframe):
     dataframe["cant"] = dataframe["cant"].astype(int)
     return dataframe
 
+
 def clean_activity(dataframe):
     dataframe["Fecha"] = pd.to_datetime(
         dataframe["Fecha"],
@@ -115,3 +116,215 @@ def clean_activity(dataframe):
     dataframe['Total'] = pd.to_numeric(dataframe['Total'], errors='coerce')
 
     return dataframe
+
+
+def clean_fallos_judiciales(dataframe):
+    dataframe["Fecha"] = pd.to_datetime(dataframe["fecha_fallo"], errors="coerce")
+
+    dataframe["Año"] = dataframe["Fecha"].dt.year
+    dataframe["Mes"] = dataframe["Fecha"].dt.month_name().str.capitalize()
+    dataframe["Mes"] = dataframe["Mes"].map(traducir_mes)
+
+    dataframe["fecha_fallo"] = dataframe["Fecha"].dt.date
+    return dataframe
+
+
+def clean_ranking_actualizado(dataframe):
+    import unicodedata
+    import re
+
+    df = dataframe.copy()
+
+    def limpiar(valor):
+        if pd.isna(valor):
+            return ""
+
+        valor = str(valor).upper().strip()
+
+        valor = (
+            valor.replace("�", "")
+            .replace("\xad", "")
+            .replace("Ã³", "O")
+            .replace("Ã©", "E")
+            .replace("PIÃ±EIRO", "PIÑEIRO")
+            .replace("º", "O")
+            .replace("°", "O")
+        )
+
+        valor = unicodedata.normalize("NFKD", valor)
+        valor = valor.encode("ASCII", "ignore").decode("utf-8")
+
+        valor = re.sub(r"\bPARTIDO\b|\bPDO\b|\bPDTO\b|\bDPTO\b|\bPCIA\b", " ", valor)
+        valor = re.sub(r"[_/*.,;:()?\-]+", " ", valor)
+        valor = re.sub(r"\s+", " ", valor).strip()
+
+        return valor
+
+    def normalizar(valor):
+        loc = limpiar(valor)
+
+        if loc in ["", "NAN", "NONE", "NO CONSTA", "SIN INFORMAR", "NO DISPONIBLE", "---", "SA", "B"]:
+            return ""
+
+        if (
+                (
+                        "AUTONOMA" in loc
+                        and (
+                                "BS" in loc
+                                or "BUENOS AIRES" in loc
+                        )
+                )
+                or loc in [
+            "CABA",
+            "C A B A",
+            "CAPITAL",
+            "CAPITAL FEDERAL",
+            "CIUDAD",
+            "CIUDAD AUTONOMA",
+        ]
+                or loc.startswith("CABA COMUNA")
+                or loc.startswith("COMUNA")
+        ):
+            return "CIUDAD AUTÓNOMA DE BUENOS AIRES"
+
+        # LANÚS
+        if "LANUS" in loc or "LANS" in loc or "LANUES" in loc or "LANU " in loc:
+            if "OESTE" in loc or "OSTE" in loc or loc in ["LANUS O", "LANUS O LANUS", "LANS OESTE", "LANU OESTE"]:
+                return "LANÚS OESTE"
+            if "ESTE" in loc or loc in ["LANUS E", "LANU ESTE"]:
+                return "LANÚS ESTE"
+            if "VILLA DIAMANTE" in loc or "V DIAMANTE" in loc:
+                return "VILLA DIAMANTE - LANÚS"
+            if "VILLA CARAZA" in loc or "V CARAZA" in loc:
+                return "VILLA CARAZA - LANÚS"
+            if "V INDUSTRIALES" in loc or "VILLA INDUSTRIALES" in loc or "VILLA DE LOS INDUSTRIALES" in loc:
+                return "VILLA DE LOS INDUSTRIALES - LANÚS"
+            if "MONTE CHINGOLO" in loc or "MTE CHINGOLO" in loc:
+                return "MONTE CHINGOLO - LANÚS"
+            if "VALENTIN ALSINA" in loc or "V ALSINA" in loc:
+                return "VALENTÍN ALSINA - LANÚS"
+            if "ESCALADA" in loc:
+                return "REMEDIOS DE ESCALADA - LANÚS"
+            return "LANÚS"
+
+        # Remedios de Escalada
+        if "ESCALADA" in loc or "RDIOS" in loc:
+            return "REMEDIOS DE ESCALADA"
+
+        # Valentín Alsina
+        if "VALENT" in loc or loc in ["V ALSINA"]:
+            return "VALENTÍN ALSINA"
+
+        # Lomas de Zamora y localidades asociadas
+        if "LOMAS" in loc or "L DE ZAMORA" in loc or "LDE ZAMORA" in loc:
+            if "BANFIELD" in loc:
+                return "BANFIELD - LOMAS DE ZAMORA"
+            if "TEMPERLEY" in loc or "TEMPEREY" in loc or "TERMPERLEY" in loc:
+                return "TEMPERLEY - LOMAS DE ZAMORA"
+            if "LLAVALLOL" in loc or "LAVALLOL" in loc:
+                return "LLAVALLOL - LOMAS DE ZAMORA"
+            if "TURDERA" in loc:
+                return "TURDERA - LOMAS DE ZAMORA"
+            if "VILLA FIORITO" in loc or "V FIORITO" in loc:
+                return "VILLA FIORITO - LOMAS DE ZAMORA"
+            if "VILLA ALBERTINA" in loc or "V ALBERTINA" in loc:
+                return "VILLA ALBERTINA - LOMAS DE ZAMORA"
+            if "INGENIERO BUDGE" in loc or "ING BUDGE" in loc:
+                return "INGENIERO BUDGE - LOMAS DE ZAMORA"
+            return "LOMAS DE ZAMORA"
+
+        # Almirante Brown
+        if "ALTE BROWN" in loc or "ALMIRANTE BROWN" in loc or "A BROWN" in loc:
+            if "ADROGUE" in loc:
+                return "ADROGUÉ - ALMIRANTE BROWN"
+            if "BURZACO" in loc:
+                return "BURZACO - ALMIRANTE BROWN"
+            if "GLEW" in loc:
+                return "GLEW - ALMIRANTE BROWN"
+            if "LONGCHAMPS" in loc or "LONCHAMPS" in loc:
+                return "LONGCHAMPS - ALMIRANTE BROWN"
+            if "RAFAEL CALZADA" in loc or "R CALZADA" in loc or loc == "CALZADA":
+                return "RAFAEL CALZADA - ALMIRANTE BROWN"
+            if "CLAYPOLE" in loc:
+                return "CLAYPOLE - ALMIRANTE BROWN"
+            if "JOSE MARMOL" in loc or "J MARMOL" in loc:
+                return "JOSÉ MÁRMOL - ALMIRANTE BROWN"
+            return "ALMIRANTE BROWN"
+
+        # Avellaneda
+        if "AVELLANEDA" in loc:
+            if "PINEIRO" in loc or "PINEYRO" in loc or "PIEIRO" in loc or "PINIERO" in loc:
+                return "PIÑEYRO - AVELLANEDA"
+            if "SARANDI" in loc:
+                return "SARANDÍ - AVELLANEDA"
+            if "WILDE" in loc:
+                return "WILDE - AVELLANEDA"
+            if "GERLI" in loc:
+                return "GERLI - AVELLANEDA"
+            if "DOMINICO" in loc:
+                return "VILLA DOMÍNICO - AVELLANEDA"
+            if "DOCK SUD" in loc:
+                return "DOCK SUD - AVELLANEDA"
+            return "AVELLANEDA"
+
+        # Correcciones exactas comunes
+        exactos = {
+            "ADROGUE": "ADROGUÉ",
+            "ADROGU": "ADROGUÉ",
+            "A KORN": "ALEJANDRO KORN",
+            "JOSE MARMOL": "JOSÉ MÁRMOL",
+            "J MARMOL": "JOSÉ MÁRMOL",
+            "TRISTAN SUAREZ": "TRISTÁN SUÁREZ",
+            "MORON": "MORÓN",
+            "ITUZAINGO": "ITUZAINGÓ",
+            "VTE LOPEZ": "VICENTE LÓPEZ",
+            "VICENTE LOPEZ": "VICENTE LÓPEZ",
+            "SAN JOSE": "SAN JOSÉ",
+            "SAN CRISTOBAL": "SAN CRISTÓBAL",
+            "LUIS GUILLON": "LUIS GUILLÓN",
+            "EL JAGUEL": "EL JAGÜEL",
+            "SARANDI": "SARANDÍ",
+            "VILLA DOMINICO": "VILLA DOMÍNICO",
+            "V DOMINICO": "VILLA DOMÍNICO",
+            "VILLA DOMINICO AVELLANEDA": "VILLA DOMÍNICO - AVELLANEDA",
+            "PINEIRO": "PIÑEYRO",
+            "PINEYRO": "PIÑEYRO",
+            "PINIERO": "PIÑEYRO",
+            "PIEIRO": "PIÑEYRO",
+            "PIEIIRO": "PIÑEYRO",
+            "TEMPEREY": "TEMPERLEY",
+            "TERMPERLEY": "TEMPERLEY",
+            "BENFIELD": "BANFIELD",
+            "BANDFIELD": "BANFIELD",
+            "BAFIELD": "BANFIELD",
+            "LAVALLOL": "LLAVALLOL",
+            "LONCHAMPS": "LONGCHAMPS",
+            "MTE GRANDE": "MONTE GRANDE",
+            "MTE GDE": "MONTE GRANDE",
+            "MTE CHINGOLO": "MONTE CHINGOLO",
+            "MONTE CHINGOLO": "MONTE CHINGOLO",
+            "SAN FCO SOLANO": "SAN FRANCISCO SOLANO",
+            "S F SOLANO": "SAN FRANCISCO SOLANO",
+            "S FCO SOLANO": "SAN FRANCISCO SOLANO",
+            "FCIO VARELA": "FLORENCIO VARELA",
+            "GDOR VIRASORO": "GOBERNADOR VIRASORO",
+            "GRAL RODRIGUEZ": "GENERAL RODRÍGUEZ",
+            "GENERAL RODRIGUEZ": "GENERAL RODRÍGUEZ",
+            "SGO DEL ESTERO": "SANTIAGO DEL ESTERO",
+            "LAPLATA": "LA PLATA",
+            "PLATANOS": "PLÁTANOS",
+            "OLVIOS": "OLIVOS",
+            "CRUCESITA": "CRUCECITA",
+            "GERLLI": "GERLI",
+            "RNELAGH": "RANELAGH",
+            "GOUDGE": "GUERNICA",
+        }
+
+        if loc in exactos:
+            return exactos[loc]
+
+        return loc.title()
+
+    df["Localidad"] = df["Localidad"].apply(normalizar)
+
+    return df.drop(columns = "Unnamed: 0")

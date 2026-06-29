@@ -5,11 +5,11 @@ import pandas as pd
 from FileGetters.file_getter import get_ranking_medios_de_pago
 
 
-def  raised_by_type(dataframe):
+def raised_by_type(dataframe):
     raised_by_type_grouop = dataframe.groupby("Tipo infraccion").agg({"total": ["sum"]}).reset_index()
     raised_by_type_grouop.columns = ["Tipo infraccion", "total"]
     fig = px.pie(raised_by_type_grouop, names="Tipo infraccion", values="total",
-                 color_discrete_sequence=["#ff3333", "#6600ff", "#00e6ac", "yellow",'deeppink']
+                 color_discrete_sequence=["#ff3333", "#6600ff", "#00e6ac", "yellow", 'deeppink']
                  , category_orders={"Tipo infraccion": ["Fotomulta",
                                                         "Velocidad",
                                                         "PDA",
@@ -47,7 +47,7 @@ def notificated_by_location(dataframe):
     notificated_by_grouop = dataframe.groupby("localidad").agg({"lote_id": ["count"]}).reset_index()
     notificated_by_grouop.columns = ["Localidad", "Notificadas"]
     fig = px.pie(notificated_by_grouop.nlargest(5, "Notificadas"), names="Localidad", values="Notificadas",
-                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a","#ff00bf","#1affa3"])
+                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a", "#ff00bf", "#1affa3"])
     fig.update_layout(
         paper_bgcolor="white",
         plot_bgcolor="white",
@@ -239,7 +239,7 @@ def barplot_by_type(df):
     agrupado = df.groupby(["fecha_acreditacion", "Tipo infraccion"]).agg({"numero": ["count"]}).reset_index()
     agrupado.columns = ["fecha", "tipo", "acta"]
     fig = px.bar(agrupado, color="tipo", x="fecha", y="acta",
-                 color_discrete_sequence=["#ff3333", "#6600ff", "#00e6ac", "yellow","deeppink"]
+                 color_discrete_sequence=["#ff3333", "#6600ff", "#00e6ac", "yellow", "deeppink"]
                  , category_orders={"tipo": ["Fotomulta",
                                              "Velocidad",
                                              "PDA",
@@ -263,7 +263,7 @@ def barplot_by_type(df):
 
 def ranking_pagos_plot(df):
     fig = px.pie(df, names="Medio Pago", values="total", color="Medio Pago",
-                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a","#ff1a1a","#1affa3"], hole=.5)
+                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a", "#ff1a1a", "#1affa3"], hole=.5)
     fig.update_layout(
         paper_bgcolor="white",
         plot_bgcolor="white",
@@ -365,6 +365,7 @@ def daily_notifications_plot(df):
         )
         fig.update_traces(textfont=dict(size=13))
     return fig
+
 
 def barplot_diario_por_revisor(berisso_nivel_5):
     aceptadas_rechazadas_diario = (
@@ -500,6 +501,7 @@ def grilla_revisores_nivel_5(berisso_nivel_5, fecha_desde, fecha_hasta):
     )
     return fig
 
+
 def show_camera_activity(dataframe_nivel_5_berisso):
     camera_activity = dataframe_nivel_5_berisso.groupby(["Fecha", "Código de cámara"]).agg(
         {"Aceptadas": ["sum"],
@@ -535,6 +537,7 @@ def show_camera_activity(dataframe_nivel_5_berisso):
         textfont_size=12,
     )
     return fig
+
 
 def notifications_by_type(dataframe):
     notifications = (
@@ -593,4 +596,57 @@ def notifications_by_type(dataframe):
         textfont_size=12,
     )
 
+    return fig
+
+
+def activity_by_judge(dataframe):
+    actividad = dataframe["juzgado"].value_counts().reset_index()
+    actividad.columns = ["Juzgado", "Fallos Emitidos"]
+    fig = px.pie(actividad, names="Juzgado", values="Fallos Emitidos",
+                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a", "#ff00bf", "#1affa3"],
+                 category_orders={"Juzgado": sorted(actividad["Juzgado"].unique().tolist())})
+    fig.update_layout(
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        font=dict(color="black"),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.4,
+            xanchor="center",
+            x=0.5
+        ),
+        # height=350,
+    )
+
+    fig.update_traces(
+        # textfont_size=12,
+    )
+    return fig
+
+
+def daily_activity_judge(dataframe):
+    dataframe["Fecha"] = dataframe["Fecha"].dt.date
+    actividad_diaria = dataframe.groupby(["Fecha", "juzgado"]).agg({"acta": "count"}).reset_index()
+    actividad_diaria.columns = ["Fecha", "Juzgado", "Fallos Emitidos"]
+    fig = px.bar(actividad_diaria, x="Fecha", y="Fallos Emitidos", color="Juzgado",
+                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a", "#ff00bf", "#1affa3"], text_auto=True,
+                 category_orders={"Juzgado": sorted(actividad_diaria["Juzgado"].unique().tolist())})
+    fig.update_layout(
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        font=dict(color="black"),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=-0.4,
+            xanchor="center",
+            x=0.5
+        ),
+        height=450,
+    )
+
+    fig.update_traces(
+        textfont_size=12,
+    )
     return fig
