@@ -57,7 +57,7 @@ def interaction(rol):
                          help="### Información\n- Actividad Diaria General\n- Actividad Diaria Por Revisor\n"):
             st.session_state.pagina_actual = "actividad"
             st.rerun()
-        elif cole.button("Ver **Actas A Preescribir** _(trabajando)_", use_container_width=True, type="primary",
+        elif cole.button("Ver **Actas A Preescribir**", use_container_width=True, type="primary",
                          icon=":material/nest_clock_farsight_analog:"):
             st.session_state.pagina_actual = "preescribir"
             st.rerun()
