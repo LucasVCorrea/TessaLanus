@@ -25,20 +25,20 @@ def mostrar_pagina_preescriptions(dataframe):
     metric_c.metric("Monto Total",
                     value=f"${dataframe.loc[dataframe["estado"] == estado_elegido]["monto"].astype(int).sum() if estado_elegido != "Todos los Estados" else dataframe["monto"].astype(int).sum():,.0f}".replace(
                         ",", "."))
-    cola, colb = st.columns([2, 1])
-    with cola:
-        container = st.container(border=True)
-        if estado_elegido == "Todos los Estados":
-            container.subheader("Total por estado", anchor=False)
-            agrupado_por_estado = dataframe.groupby("estado").agg({"acta_numero": ["nunique"]}).reset_index()
-            agrupado_por_estado.columns = ["Estado", "Cantidad de Actas"]
-            container.dataframe(agrupado_por_estado.sort_values(by="Cantidad de Actas", ascending=False),
-                                hide_index=True, width="stretch")
-        else:
-            container.subheader(f"Listado de Actas: _{estado_elegido}_", anchor=False)
-            container.dataframe(dataframe.loc[dataframe[
-                                                  "estado"] == estado_elegido] if estado_elegido != "Todos los Estados" else dataframe,
-                                hide_index=True, width="stretch")
+    # cola, colb = st.columns([2, 1])
+    # with cola:
+    container = st.container(border=True)
+    if estado_elegido == "Todos los Estados":
+        container.subheader("Total por estado", anchor=False)
+        agrupado_por_estado = dataframe.groupby("estado").agg({"acta_numero": ["nunique"]}).reset_index()
+        agrupado_por_estado.columns = ["Estado", "Cantidad de Actas"]
+        container.dataframe(agrupado_por_estado.sort_values(by="Cantidad de Actas", ascending=False),
+                            hide_index=True, width="stretch")
+    else:
+        container.subheader(f"Listado de Actas: _{estado_elegido}_", anchor=False)
+        container.dataframe(dataframe.loc[dataframe[
+                                              "estado"] == estado_elegido] if estado_elegido != "Todos los Estados" else dataframe,
+                            hide_index=True, width="stretch")
 
     style_metric_cards(background_color="white", border_left_color="#b30000", box_shadow=False,
                        border_color="azure",
