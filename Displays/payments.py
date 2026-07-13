@@ -42,33 +42,29 @@ def show_payments(payments_data):
         "**Seleccionar tipo de infracción**",
         options=payments_data_filtered["Tipo infraccion"].unique(),
         placeholder="Tipos de infracción",
-        default=payments_data_filtered["Tipo infraccion"].unique()[0]
+        default=payments_data_filtered["Tipo infraccion"].unique().tolist()
     )
     metric_1, columna_graficos = st.columns([1, 3])
     tipos_label = ", ".join(tipo_infracciones_elegido)
     metric_1.metric(
         f"**Recaudado por Infracciones** _({tipos_label if len(tipo_infracciones_elegido) != payments_data_filtered["Tipo infraccion"].nunique() else "Todas las infracciones"}_)",
         f"${payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)]["Tasa infraccion"].astype(int).sum():,.0f}".replace(
-            ",", "."), delta=f"tocheck: {0}", help="Help")
+            ",", "."))
     metric_1.metric(
         f"**Recaudado por Gastos Adm.** _({tipos_label if len(tipo_infracciones_elegido) != payments_data_filtered["Tipo infraccion"].nunique() else "Todas las infracciones"}_)",
         f"${payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)]["Tasa administrativa"].astype(int).sum():,.0f}".replace(
-            ",", "."), delta=f"tocheck: {0}", help="Help")
+            ",", "."))
     metric_1.metric(
         f"**Actas Pagadas** _({tipos_label if len(tipo_infracciones_elegido) != payments_data_filtered["Tipo infraccion"].nunique() else "Todas las infracciones"}_)",
         f"{len(payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)])} Actas".replace(
-            ",", "."), delta=f"tocheck: {0}", help="Help")
+            ",", "."))
     if opcion_de_vista == "Gráficos":
         container = columna_graficos.container(border=True)
         container.caption("**Cantidad de actas acreditadas por día y tipo de infracción**")
         container.plotly_chart(barplot_by_type(
             payments_data_filtered.loc[payments_data_filtered["Tipo infraccion"].isin(tipo_infracciones_elegido)]))
-        with columna_graficos:
-            columna_izquierda, columna_derecha = st.columns(2)
-            container = columna_izquierda.container(border=True)
-            container.caption("**Recaudado por Tipo de Infracción**")
-            container.plotly_chart(raised_by_type(payments_data_filtered), key="adas")
-            container = columna_derecha.container(border=True)
+        with metric_1:
+            container = st.container(border=True)
             container.caption(
                 f"**Ranking de Medios de Pago** _({tipos_label if len(tipo_infracciones_elegido) != payments_data_filtered["Tipo infraccion"].nunique() else "Todas las infracciones"}_)")
             container.plotly_chart(ranking_pagos_plot(get_ranking_medios_de_pago(

@@ -3,9 +3,9 @@ import streamlit as st
 from streamlit_extras.metric_cards import style_metric_cards
 from datetime import date
 import pandas as pd
-from ExtraFunctions.extras import payed_notifications
+from ExtraFunctions.extras import payed_notifications, to_excel_reporte
 from FileGetters.file_getter import get_ranking_actualizado
-from Plots.get_plot import daily_notifications_plot, notifications_by_type
+from Plots.get_plot import daily_notifications_plot, notifications_by_type, daily_notifications
 from Styles.estilos import aplicar_estilo_dashboard
 
 
@@ -81,10 +81,10 @@ def mostrar_pagina_lotes(notifications_dataframe, payments_dataframe):
         ]
 
     if vista_elegida == "Indicadores":
-        metrica_1, metrica_2, metrica_3, metrica_4, metrica_5, metrica_6 = st.columns(6)
+        metrica_1, metrica_2, metrica_3, metrica_4, metrica_6 = st.columns(5)
         metrica_1.metric(
             f"**Total de Actas notificadas** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}",
-            value=f":red[:material/stacked_email:] {lotes_filtrado["acta_id"].nunique()}", delta=f"{100}")
+            value=f":red[:material/stacked_email:] {lotes_filtrado["acta_id"].nunique()}")
         metrica_2.metric(f"**Por Email** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}",
                          value=f":red[:material/attach_email:] {lotes_filtrado.loc[lotes_filtrado['notific_type'] == 'Email', 'acta_id'].nunique()}",
                          )
@@ -96,17 +96,17 @@ def mostrar_pagina_lotes(notifications_dataframe, payments_dataframe):
         # metrica_3.metric("**Recaudado por Notificacion Audiencia**", value = f"${payed_notifications(lotes_filtrado, payments_dataframe)['total'].astype(int).sum():,.0f}".replace(
         #         ",", "."))
 
-        metrica_4.metric(
-            f"**Notificaciones Sentencia** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}**",
-            value=0)
-        # metrica_4.metric("**Recaudado por Notificacion Sentencia**", value = 0)
-
-        metrica_5.metric(
-            f"**Notificaciones Fehaciente Por Correo** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}**",
-            value=0)
+        # metrica_4.metric(
+        #     f"**Notificaciones Sentencia** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}**",
+        #     value=0)
+        # # metrica_4.metric("**Recaudado por Notificacion Sentencia**", value = 0)
+        #
+        # metrica_4.metric(
+        #     f"**Notificaciones Fehaciente Por Correo** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}**",
+        #     value=0)
         # metrica_5.metric("**Recaudado por Fehaciente Por Correo**", value = 0)
 
-        metrica_6.metric(
+        metrica_4.metric(
             f"**Total de Actas pagadas** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}",
             value=f"{payed_notifications(lotes_filtrado, payments_dataframe, how="inner")['acta_id'].nunique()} Actas")
         metrica_6.metric(
@@ -129,10 +129,10 @@ def mostrar_pagina_lotes(notifications_dataframe, payments_dataframe):
         with columna_barplot:
             container = st.container(border=True)
             container.subheader("Cantidad de Actas notificadas por Localidad", anchor=False)
-            actas_por_localidad = lotes_filtrado.groupby("localidad")["acta_id"].nunique().reset_index()
-            actas_por_localidad.columns = ["Localidad", "Cantidad de Actas Notificadas"]
-            container.dataframe(actas_por_localidad.sort_values(by="Cantidad de Actas Notificadas", ascending=False),
-                                width="stretch", hide_index=True)
+            # actas_por_localidad = lotes_filtrado.groupby("localidad")["acta_id"].nunique().reset_index()
+            # actas_por_localidad.columns = ["Localidad", "Cantidad de Actas Notificadas"]
+            container.plotly_chart(daily_notifications(lotes_filtrado))
+
     elif vista_elegida == "Tablas":
         columna_barplot, columna_donut = st.columns([2, 1])
         with columna_barplot:
@@ -344,6 +344,14 @@ def mostrar_pagina_lotes(notifications_dataframe, payments_dataframe):
         )
 
         st.markdown(tabla)
+        ranking_table_excel = to_excel_reporte(
+            data_infractores_filtrado)
+        st.download_button(
+            label=":green-badge[:material/table: **Descargar Ranking en Excel**]",
+            data=ranking_table_excel,
+            file_name="ranking_infractores.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
     style_metric_cards(background_color="white", border_left_color="#b30000", box_shadow=False,
                        border_color="azure",

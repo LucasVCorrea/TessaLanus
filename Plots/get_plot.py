@@ -9,7 +9,7 @@ def raised_by_type(dataframe):
     raised_by_type_grouop = dataframe.groupby("Tipo infraccion").agg({"total": ["sum"]}).reset_index()
     raised_by_type_grouop.columns = ["Tipo infraccion", "total"]
     fig = px.pie(raised_by_type_grouop, names="Tipo infraccion", values="total",
-                 color_discrete_sequence=["#ff3333", "#6600ff", "#00e6ac", "yellow", 'deeppink']
+                 color_discrete_sequence=["#d62929", "#ffcc00", "#bf4080", "#00ace6", 'deeppink']
                  , category_orders={"Tipo infraccion": ["Fotomulta",
                                                         "Velocidad",
                                                         "PDA",
@@ -47,7 +47,7 @@ def notificated_by_location(dataframe):
     notificated_by_grouop = dataframe.groupby("localidad").agg({"lote_id": ["count"]}).reset_index()
     notificated_by_grouop.columns = ["Localidad", "Notificadas"]
     fig = px.pie(notificated_by_grouop.nlargest(5, "Notificadas"), names="Localidad", values="Notificadas",
-                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a", "#ff00bf", "#1affa3"])
+                 color_discrete_sequence=px.colors.sequential.YlOrRd_r)
     fig.update_layout(
         paper_bgcolor="white",
         plot_bgcolor="white",
@@ -80,9 +80,8 @@ def daily_payments_by_type(dataframe):
     daily_payments_by_type_grouop = dataframe.groupby("fecha_acreditacion").agg(
         {"numero": ["count"]}).reset_index()
     daily_payments_by_type_grouop.columns = ["Fecha", "Actas Acreditadas"]
-    # daily_payments_by_type_grouop["total"] = daily_payments_by_type_grouop["total"].map(lambda x:round(int(x)))
     fig = px.bar(daily_payments_by_type_grouop, x="Fecha", y="Actas Acreditadas",
-                 color_discrete_sequence=["#ff3333", "MidnightBlue", "Red"], text_auto=True,
+                 color_discrete_sequence=["#d62929", "MidnightBlue", "Red"], text_auto=True,
                  )
     fig.update_layout(
 
@@ -237,9 +236,9 @@ def show_camera_map(df):
 
 def barplot_by_type(df):
     agrupado = df.groupby(["fecha_acreditacion", "Tipo infraccion"]).agg({"numero": ["count"]}).reset_index()
-    agrupado.columns = ["fecha", "tipo", "acta"]
-    fig = px.bar(agrupado, color="tipo", x="fecha", y="acta",
-                 color_discrete_sequence=["#ff3333", "#6600ff", "#00e6ac", "yellow", "deeppink"]
+    agrupado.columns = ["fecha", "tipo", "actas acreditadas"]
+    fig = px.bar(agrupado, color="tipo", x="fecha", y="actas acreditadas",
+                 color_discrete_sequence=["#d62929", "#ffcc00", "#bf4080", "#00ace6", 'deeppink']
                  , category_orders={"tipo": ["Fotomulta",
                                              "Velocidad",
                                              "PDA",
@@ -257,7 +256,7 @@ def barplot_by_type(df):
             title=dict(font=dict(color='black'), ),
             tickfont=dict(color='black'),
         ),
-        height=320)
+        height=520)
     return fig
 
 
@@ -283,7 +282,7 @@ def ranking_pagos_plot(df):
             xanchor="center",
             x=0.5
         ),
-        height=400,
+        height=370,
     )
     fig.update_traces(
         textfont_size=16,
@@ -559,8 +558,7 @@ def notifications_by_type(dataframe):
         names="Tipo de Notificacion",
         values="Actas notificadas",
         color_discrete_sequence=[
-            "crimson",
-            "orange",
+            "#00ace6", "#bf4080",
             "#ff3399",
             "#ff8533",
             "#ffff33"
@@ -649,4 +647,44 @@ def daily_activity_judge(dataframe):
     fig.update_traces(
         textfont_size=12,
     )
+    return fig
+
+def daily_notifications(df):
+    df["Fecha Lote"] = df["Fecha Lote"].dt.date
+    datos = (
+        df.groupby(["Fecha Lote","notific_type"])
+        .size()
+        .reset_index(name="Cantidad")
+        # .sort_values("Mes_num")
+    )
+
+    fig = px.bar(
+        datos,
+        x="Fecha Lote",
+        y="Cantidad",
+        color="notific_type",
+        text_auto=True,
+        color_discrete_sequence=["#00ace6", "#bf4080", "#bf4080", "#00ace6", 'deeppink'],
+        category_orders={"notific_type": ["Email", "Bajo Puerta"]}
+
+    )
+
+    fig.update_layout(
+
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        font=dict(color='black'),
+        xaxis=dict(
+            title=dict(font=dict(color='black')),
+            tickfont=dict(color='black'),
+        ),
+        yaxis=dict(
+            title=dict(font=dict(color='black'), ),
+            tickfont=dict(color='black'),
+        ),
+        barcornerradius=8,
+        height=435,
+
+    )
+
     return fig
