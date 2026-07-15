@@ -477,9 +477,7 @@ def mostrar_ultima_conexion():
             badge_color = "red"
 
         tiempo_txt = texto_tiempo(row)
-        # col1, col2 = st.columns([6, 2], gap="small")
 
-        # with col1:
         st.write(
             f":{badge_color}-badge[:material/person: **{row['Nombre']}**] :{rol_badge_color}-badge[{row['Rol']}] Ult. conexión: "
             f"{row['ultima_conex_fecha']} {row['ultima_conex_hora']}"

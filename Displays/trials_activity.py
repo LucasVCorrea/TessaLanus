@@ -98,7 +98,6 @@ def mostrar_pagina_juzgados(dataframe):
         container = st.container(border=True)
         container.subheader("Fallos Emitidos por Día", anchor=False)
         container.plotly_chart(daily_activity_judge(df_filtrado))
-    # st.dataframe(df_filtrado)
     style_metric_cards(background_color="white", border_left_color="#b30000", box_shadow=False,
                        border_color="azure",
                        border_radius_px=30)

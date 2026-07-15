@@ -93,18 +93,6 @@ def mostrar_pagina_lotes(notifications_dataframe, payments_dataframe):
             f"**Notificaciones Audiencia** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}",
             value=f":red[:material/garage_door:] {lotes_filtrado.loc[lotes_filtrado['notific_type'] == 'Bajo Puerta', 'acta_id'].nunique()}",
         )
-        # metrica_3.metric("**Recaudado por Notificacion Audiencia**", value = f"${payed_notifications(lotes_filtrado, payments_dataframe)['total'].astype(int).sum():,.0f}".replace(
-        #         ",", "."))
-
-        # metrica_4.metric(
-        #     f"**Notificaciones Sentencia** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}**",
-        #     value=0)
-        # # metrica_4.metric("**Recaudado por Notificacion Sentencia**", value = 0)
-        #
-        # metrica_4.metric(
-        #     f"**Notificaciones Fehaciente Por Correo** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}**",
-        #     value=0)
-        # metrica_5.metric("**Recaudado por Fehaciente Por Correo**", value = 0)
 
         metrica_4.metric(
             f"**Total de Actas pagadas** del {fecha_desde.strftime("%d/%m/%Y")} al {fecha_hasta.strftime("%d/%m/%Y")}",
@@ -129,8 +117,6 @@ def mostrar_pagina_lotes(notifications_dataframe, payments_dataframe):
         with columna_barplot:
             container = st.container(border=True)
             container.subheader("Cantidad de Actas notificadas por Localidad", anchor=False)
-            # actas_por_localidad = lotes_filtrado.groupby("localidad")["acta_id"].nunique().reset_index()
-            # actas_por_localidad.columns = ["Localidad", "Cantidad de Actas Notificadas"]
             container.plotly_chart(daily_notifications(lotes_filtrado))
 
     elif vista_elegida == "Tablas":

@@ -126,18 +126,14 @@ def mostrar_pagina_nivel_5(actividad_dataframe):
                 round(actividad_por_camara["Total"] / actividad_por_camara["Total"].sum() * 100, 1)
                 .astype(str) + "%"
         )
-        eligio_ver_grafico = container.toggle("Ver gráfico")
-        if eligio_ver_grafico:
-            container.plotly_chart(show_camera_activity(
-                actividad_dataframe.loc[
-                    (actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]),
-                width="stretch")
-        else:
-            container.dataframe(actividad_por_camara.sort_values(by="Total", ascending=False), hide_index=True)
-        # nivel_5_reducido.group
-        # container.plotly_chart(show_camera_activity(
-        #     actividad_dataframe.loc[(actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]),
-        #     width="stretch")
+        # eligio_ver_grafico = container.toggle("Ver gráfico")
+        # if eligio_ver_grafico:
+        #     container.plotly_chart(show_camera_activity(
+        #         actividad_dataframe.loc[
+        #             (actividad_dataframe["Fecha"] >= fecha_desde) & (actividad_dataframe["Fecha"] <= fecha_hasta)]),
+        #         width="stretch")
+        # else:
+        container.dataframe(actividad_por_camara.sort_values(by="Total", ascending=False), hide_index=True)
 
     style_metric_cards(background_color="white", border_left_color="#b30000", box_shadow=False,
                        border_color="azure",

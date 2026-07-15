@@ -407,7 +407,7 @@ def barplot_diario_por_revisor(berisso_nivel_5):
         color="Resultado",
         text_auto=True,
         hover_data={"hover_text": True, "Presunciones de Nivel 5": True},
-        color_discrete_sequence=["Crimson", "#3333ff"]
+        color_discrete_sequence=["#00ace6", "#bf4080"]
     )
 
     fig.update_traces(
@@ -601,7 +601,7 @@ def activity_by_judge(dataframe):
     actividad = dataframe["juzgado"].value_counts().reset_index()
     actividad.columns = ["Juzgado", "Fallos Emitidos"]
     fig = px.pie(actividad, names="Juzgado", values="Fallos Emitidos",
-                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a", "#ff00bf", "#1affa3"],
+                 color_discrete_sequence=["#d62929", "#ffcc00", "#bf4080", "#00ace6", 'BlanchedAlmond'],
                  category_orders={"Juzgado": sorted(actividad["Juzgado"].unique().tolist())})
     fig.update_layout(
         paper_bgcolor="white",
@@ -628,7 +628,7 @@ def daily_activity_judge(dataframe):
     actividad_diaria = dataframe.groupby(["Fecha", "juzgado"]).agg({"acta": "count"}).reset_index()
     actividad_diaria.columns = ["Fecha", "Juzgado", "Fallos Emitidos"]
     fig = px.bar(actividad_diaria, x="Fecha", y="Fallos Emitidos", color="Juzgado",
-                 color_discrete_sequence=["#0066ff", "#ff0066", "#ffa31a", "#ff00bf", "#1affa3"], text_auto=True,
+                 color_discrete_sequence=["#d62929", "#ffcc00", "#bf4080", "#00ace6", 'BlanchedAlmond'], text_auto=True,
                  category_orders={"Juzgado": sorted(actividad_diaria["Juzgado"].unique().tolist())})
     fig.update_layout(
         paper_bgcolor="white",
